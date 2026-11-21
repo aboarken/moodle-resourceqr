@@ -132,6 +132,37 @@ final class image_test extends \advanced_testcase {
     }
 
     /**
+     * Generating images raises no PHP notices, warnings or deprecations and prints nothing.
+     *
+     * Any such message would be printed into the image on sites with debugging displayed.
+     */
+    public function test_no_php_messages(): void {
+        $messages = [];
+        set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline) use (&$messages): bool {
+            $messages[] = "$errstr in $errfile:$errline";
+            return true;
+        });
+        ob_start();
+        try {
+            foreach (['svg', 'png'] as $format) {
+                if ($format === 'png' && !qr_generator::png_supported()) {
+                    continue;
+                }
+                foreach (qr_generator::STYLES as $style) {
+                    set_config('style', $style, 'local_resourceqr');
+                    image::create($this->cm(), $format, false);
+                    image::create($this->cm(), $format, true);
+                }
+            }
+        } finally {
+            $output = ob_get_clean();
+            restore_error_handler();
+        }
+        $this->assertSame([], $messages);
+        $this->assertSame('', $output);
+    }
+
+    /**
      * The event validates its data.
      */
     public function test_event_validation(): void {

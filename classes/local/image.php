@@ -98,6 +98,17 @@ class image {
      * @param bool $download Send as an attachment.
      */
     public function send(bool $download): void {
+        // Anything already printed (for example a PHP notice shown because debugging is on)
+        // would corrupt the image. Discard it, but keep a record for developers.
+        $stray = '';
+        while (ob_get_level() > 0) {
+            $stray .= (string) ob_get_clean();
+        }
+        if (trim($stray, " \t\n\r\0\x0B") !== '') {
+            // The image endpoint defines NO_DEBUG_DISPLAY, so this goes to the server log.
+            debugging('local_resourceqr: discarded unexpected output before sending a QR code image: ' .
+                \core_text::substr(strip_tags($stray), 0, 1000), DEBUG_DEVELOPER);
+        }
         \core\session\manager::write_close();
         $asciifilename = preg_replace('/[^A-Za-z0-9._-]/', '_', $this->filename);
         header('Content-Type: ' . $this->mimetype);

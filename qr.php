@@ -29,6 +29,9 @@ define('NO_DEBUG_DISPLAY', true);
 
 require(__DIR__ . '/../../config.php');
 
+// Buffer everything from here on, so that no stray output can end up inside the image.
+ob_start();
+
 $cmid = required_param('cmid', PARAM_INT);
 $format = optional_param('format', 'svg', PARAM_ALPHA);
 $download = optional_param('download', 0, PARAM_BOOL);
