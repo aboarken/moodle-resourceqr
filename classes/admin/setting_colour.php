@@ -48,7 +48,7 @@ class setting_colour extends \admin_setting_configcolourpicker {
      * @return true|string True if valid, otherwise an error message.
      */
     public function check($data) {
-        $data = trim((string) $data);
+        $data = trim((string) $data, " \t\n\r\0\x0B");
         if (!preg_match('/^#[0-9a-fA-F]{6}$/', $data)) {
             return get_string('error:colourformat', 'local_resourceqr');
         }
@@ -72,6 +72,7 @@ class setting_colour extends \admin_setting_configcolourpicker {
         if ($result !== true) {
             return $result;
         }
-        return $this->config_write($this->name, strtolower(trim((string) $data))) ? '' : get_string('errorsetting', 'admin');
+        $colour = strtolower(trim((string) $data, " \t\n\r\0\x0B"));
+        return $this->config_write($this->name, $colour) ? '' : get_string('errorsetting', 'admin');
     }
 }

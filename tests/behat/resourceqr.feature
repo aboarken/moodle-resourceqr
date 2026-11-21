@@ -105,7 +105,7 @@ Feature: Generate QR codes for activities and resources
     Given the following config values are set as admin:
       | theme | classic |
     And I am on the "Quiz 1" "quiz activity" page logged in as teacher1
-    When I navigate to "Generate QR code" in current page administration
+    When I click on "Generate QR code" "link" in the "Administration" "block"
     Then I should see "Quiz 1" in the "QR code: Quiz 1" "dialogue"
     And "Download PNG" "link" should exist in the "QR code: Quiz 1" "dialogue"
 

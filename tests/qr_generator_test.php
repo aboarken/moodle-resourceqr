@@ -66,7 +66,7 @@ final class qr_generator_test extends \advanced_testcase {
         $command = escapeshellarg($zbarimg) . ' --quiet --raw -Sdisable -Sqrcode.enable ' . escapeshellarg($file) . ' 2>/dev/null';
         exec($command, $output, $status);
         $this->assertSame(0, $status, 'zbarimg could not decode the image: ' . implode("\n", $output));
-        return trim(implode("\n", $output));
+        return trim(implode("\n", $output), " \t\n\r\0\x0B");
     }
 
     /**

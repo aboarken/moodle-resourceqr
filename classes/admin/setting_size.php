@@ -48,7 +48,7 @@ class setting_size extends \admin_setting_configtext {
      * @return true|string True if valid, otherwise an error message.
      */
     public function validate($data) {
-        $data = trim((string) $data);
+        $data = trim((string) $data, " \t\n\r\0\x0B");
         if (!preg_match('/^\d+$/', $data)) {
             return get_string('error:size', 'local_resourceqr', ['min' => qr_generator::MIN_SIZE, 'max' => qr_generator::MAX_SIZE]);
         }

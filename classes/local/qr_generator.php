@@ -641,7 +641,6 @@ class qr_generator {
         if ($factor > 1) {
             $image = imagecreatetruecolor($size, $size);
             imagecopyresampled($image, $canvas, 0, 0, 0, 0, $size, $size, $size * $factor, $size * $factor);
-            imagedestroy($canvas);
         } else {
             $image = $canvas;
         }
@@ -652,14 +651,12 @@ class qr_generator {
                 [$x, $y, $w, $h] = $this->fit_logo($layout, imagesx($logo), imagesy($logo));
                 imagealphablending($image, true);
                 imagecopyresampled($image, $logo, $x, $y, 0, 0, $w, $h, imagesx($logo), imagesy($logo));
-                imagedestroy($logo);
             }
         }
         ob_start();
         imagepng($image, null, 9);
-        $png = ob_get_clean();
-        imagedestroy($image);
-        return $png;
+        // GD images are objects since PHP 8.0 and are freed automatically; imagedestroy() is deprecated.
+        return ob_get_clean();
     }
 
     /**

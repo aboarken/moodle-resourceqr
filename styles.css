@@ -1,4 +1,18 @@
 /* Resource QR Code. */
+
+/* Screen-reader-only text. Own class because .sr-only (Bootstrap 4) is deprecated
+   in Moodle 5 and .visually-hidden (Bootstrap 5) does not exist in Moodle 4.5. */
+.local-resourceqr-srtext {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
 .local-resourceqr-panel .local-resourceqr-name {
     font-weight: bold;
     font-size: 1.1rem;
