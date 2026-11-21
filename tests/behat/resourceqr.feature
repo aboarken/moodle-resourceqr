@@ -100,6 +100,12 @@ Feature: Generate QR codes for activities and resources
     And "Download PNG" "link" should exist
     And "Download SVG" "link" should exist
 
+  Scenario: The image endpoint returns an SVG image without errors
+    Given I am on the "Page 1" "page activity" page logged in as teacher1
+    And I navigate to "Generate QR code" in current page administration
+    When I follow "Download SVG"
+    Then I should see "QR code for"
+
   @javascript @theme_classic
   Scenario: The action works in the Classic theme
     # Classic is no longer bundled with Moodle 5.3; skip where it is not installed.
