@@ -3,6 +3,7 @@ name: Release package
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
 
 jobs:
@@ -112,3 +113,38 @@ jobs:
           path: ${{ github.workspace }}/moodledata/behat_dump
           retention-days: 7
           if-no-files-found: ignore
+
+  release:
+    name: Publish release
+    # Runs only for version tags (for example v0.1.0), after every test job has passed.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Check the tag matches the plugin release
+        run: |
+          release=$(grep -oP "release\s*=\s*'\K[^']+" version.php)
+          if [ "v${release}" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match \$plugin->release '${release}' in version.php" >&2
+            exit 1
+          fi
+
+      - name: Build the installable ZIP (top-level folder resourceqr/)
+        run: |
+          git archive --format=zip --prefix=resourceqr/ -o local_resourceqr.zip HEAD -- . ':(exclude)dist' ':(exclude).github'
+          unzip -l local_resourceqr.zip | tail -n 1
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" local_resourceqr.zip \
+            --title "local_resourceqr ${GITHUB_REF_NAME}" \
+            --notes-file CHANGES.md \
+            --verify-tag
