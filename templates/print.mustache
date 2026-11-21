@@ -1,0 +1,43 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_resourceqr/print
+
+    Print view: only the activity name, the QR code and the URL.
+
+    Context variables required for this template:
+    * name - Activity name, already passed through format_string().
+    * url - URL encoded in the QR code.
+    * previewurl - URL of the SVG image.
+    * alt - Alternative text for the QR code.
+
+    Example context (json):
+    {
+        "name": "Week 1 quiz",
+        "url": "https://moodle.example.org/mod/quiz/view.php?id=12",
+        "previewurl": "https://moodle.example.org/local/resourceqr/qr.php?cmid=12&format=svg&download=0",
+        "alt": "QR code linking to Week 1 quiz"
+    }
+}}
+<div class="local-resourceqr-print" data-region="local-resourceqr-print">
+    <h1 class="local-resourceqr-print-name">{{{name}}}</h1>
+    <img src="{{previewurl}}" alt="{{alt}}" class="local-resourceqr-print-image" width="600" height="600" data-region="local-resourceqr-image">
+    <p class="local-resourceqr-print-url" dir="ltr">{{url}}</p>
+    <div class="local-resourceqr-print-controls d-print-none">
+        <button type="button" class="btn btn-primary" data-action="local-resourceqr-printnow">{{#str}} print, local_resourceqr {{/str}}</button>
+    </div>
+</div>

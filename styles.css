@@ -1,0 +1,99 @@
+/* Resource QR Code. */
+.local-resourceqr-panel .local-resourceqr-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: .5rem;
+}
+
+.local-resourceqr-panel .local-resourceqr-warning:last-child {
+    margin-bottom: 0;
+}
+
+.local-resourceqr-panel .local-resourceqr-preview {
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.local-resourceqr-panel .local-resourceqr-image {
+    max-width: 100%;
+    height: auto;
+    width: 300px;
+    border: 1px solid #dee2e6;
+    background: #fff;
+}
+
+.local-resourceqr-panel .local-resourceqr-urllabel {
+    font-weight: bold;
+}
+
+.local-resourceqr-panel .local-resourceqr-urlrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.local-resourceqr-panel .local-resourceqr-urlinput {
+    flex: 1 1 14rem;
+    min-width: 0;
+}
+
+.local-resourceqr-panel .local-resourceqr-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+@media (max-width: 575.98px) {
+    .local-resourceqr-panel .local-resourceqr-actions .btn,
+    .local-resourceqr-panel .local-resourceqr-urlrow .btn {
+        flex: 1 1 100%;
+    }
+}
+
+/* Print page. */
+.local-resourceqr-print {
+    text-align: center;
+    padding: 1rem;
+}
+
+.local-resourceqr-print .local-resourceqr-print-name {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+.local-resourceqr-print .local-resourceqr-print-image {
+    width: 10cm;
+    max-width: 100%;
+    height: auto;
+}
+
+.local-resourceqr-print .local-resourceqr-print-url {
+    margin-top: 1rem;
+    word-break: break-all;
+    font-size: 1rem;
+}
+
+@media print {
+    body.local-resourceqr-printpage * {
+        visibility: hidden;
+    }
+
+    body.local-resourceqr-printpage .local-resourceqr-print,
+    body.local-resourceqr-printpage .local-resourceqr-print * {
+        visibility: visible;
+    }
+
+    body.local-resourceqr-printpage .local-resourceqr-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        color: #000;
+        background: #fff;
+    }
+
+    body.local-resourceqr-printpage .local-resourceqr-print .d-print-none {
+        display: none;
+    }
+}
