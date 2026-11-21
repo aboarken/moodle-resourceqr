@@ -18,6 +18,7 @@ namespace local_resourceqr;
 
 use local_resourceqr\local\qr_generator;
 
+#[\PHPUnit\Framework\Attributes\CoversClass(qr_generator::class)]
 /**
  * Tests for the QR code renderer.
  *
@@ -30,7 +31,6 @@ use local_resourceqr\local\qr_generator;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_resourceqr\local\qr_generator
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(qr_generator::class)]
 final class qr_generator_test extends \advanced_testcase {
     /** @var string URL used in the tests. */
     private const URL = 'https://moodle.example.org/mod/quiz/view.php?id=12345';

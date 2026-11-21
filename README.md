@@ -41,7 +41,8 @@ Minimum PHP versions are from each release's `admin/environment.xml`.
 `version.php` sets `requires = 2024100700` (Moodle 4.5.0) and `supported = [405, 503]`.
 
 Themes: Boost (and Boost-based themes) and Classic. Other themes work wherever they show the
-settings navigation.
+settings navigation. Moodle 5.3 no longer bundles Classic; if you install it separately, the plugin
+works with it in the same way.
 
 Requirements:
 

@@ -19,6 +19,8 @@ namespace local_resourceqr;
 use local_resourceqr\local\image;
 use local_resourceqr\local\qr_generator;
 
+#[\PHPUnit\Framework\Attributes\CoversClass(image::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(event\qrcode_generated::class)]
 /**
  * Tests for image generation and the qrcode_generated event.
  *
@@ -29,8 +31,6 @@ use local_resourceqr\local\qr_generator;
  * @covers     \local_resourceqr\local\image
  * @covers     \local_resourceqr\event\qrcode_generated
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(image::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(event\qrcode_generated::class)]
 final class image_test extends \advanced_testcase {
     /** @var \stdClass */
     private \stdClass $course;

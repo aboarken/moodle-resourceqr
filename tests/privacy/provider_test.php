@@ -16,6 +16,7 @@
 
 namespace local_resourceqr\privacy;
 
+#[\PHPUnit\Framework\Attributes\CoversClass(provider::class)]
 /**
  * Privacy provider tests.
  *
@@ -25,7 +26,6 @@ namespace local_resourceqr\privacy;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_resourceqr\privacy\provider
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(provider::class)]
 final class provider_test extends \core_privacy\tests\provider_testcase {
     /**
      * The plugin declares that it stores no data.

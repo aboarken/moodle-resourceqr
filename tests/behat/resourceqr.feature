@@ -102,7 +102,9 @@ Feature: Generate QR codes for activities and resources
 
   @javascript @theme_classic
   Scenario: The action works in the Classic theme
-    Given the following config values are set as admin:
+    # Classic is no longer bundled with Moodle 5.3; skip where it is not installed.
+    Given the "theme_classic" plugin is installed
+    And the following config values are set as admin:
       | theme | classic |
     And I am on the "Quiz 1" "quiz activity" page logged in as teacher1
     When I click on "Generate QR code" "link" in the "Administration" "block"

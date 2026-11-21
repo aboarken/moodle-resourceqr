@@ -23,6 +23,7 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->dirroot . '/webservice/tests/helpers.php');
 
+#[\PHPUnit\Framework\Attributes\CoversClass(get_qrcode_data::class)]
 /**
  * Tests for the get_qrcode_data external function.
  *
@@ -32,7 +33,6 @@ require_once($CFG->dirroot . '/webservice/tests/helpers.php');
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_resourceqr\external\get_qrcode_data
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(get_qrcode_data::class)]
 final class get_qrcode_data_test extends \externallib_advanced_testcase {
     /**
      * Teachers get the dialogue data.

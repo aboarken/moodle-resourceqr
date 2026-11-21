@@ -27,6 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once($CFG->libdir . '/adminlib.php');
 
+#[\PHPUnit\Framework\Attributes\CoversClass(setting_size::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(setting_colour::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(setting_formats::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(setting_modules::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(filename::class)]
 /**
  * Tests for settings validation, defaults and file names.
  *
@@ -40,11 +45,6 @@ require_once($CFG->libdir . '/adminlib.php');
  * @covers     \local_resourceqr\admin\setting_modules
  * @covers     \local_resourceqr\local\filename
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(setting_size::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(setting_colour::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(setting_formats::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(setting_modules::class)]
-#[\PHPUnit\Framework\Attributes\CoversClass(filename::class)]
 final class settings_test extends \advanced_testcase {
     /**
      * Installed defaults.

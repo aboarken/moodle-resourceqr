@@ -16,6 +16,7 @@
 
 namespace local_resourceqr;
 
+#[\PHPUnit\Framework\Attributes\CoversFunction('local_resourceqr_extend_settings_navigation')]
 /**
  * Tests for the settings navigation callback.
  *
@@ -25,7 +26,6 @@ namespace local_resourceqr;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     ::local_resourceqr_extend_settings_navigation
  */
-#[\PHPUnit\Framework\Attributes\CoversFunction('local_resourceqr_extend_settings_navigation')]
 final class navigation_test extends \advanced_testcase {
     /**
      * Build the settings navigation for a module page as the current user.

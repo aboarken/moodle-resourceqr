@@ -22,6 +22,7 @@ use context_module;
 use context_system;
 use local_resourceqr\local\access;
 
+#[\PHPUnit\Framework\Attributes\CoversClass(access::class)]
 /**
  * Tests for the access rules.
  *
@@ -31,7 +32,6 @@ use local_resourceqr\local\access;
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @covers     \local_resourceqr\local\access
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(access::class)]
 final class access_test extends \advanced_testcase {
     /** @var \core_course_category Course category. */
     private \core_course_category $category;
