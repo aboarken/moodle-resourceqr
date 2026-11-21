@@ -1,0 +1,88 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_resourceqr/qrcode_panel
+
+    QR code panel, shown in the dialogue and on the stand-alone page.
+
+    Context variables required for this template:
+    * cmid - Course module id.
+    * name - Activity name, already passed through format_string().
+    * plainname - Activity name as plain text.
+    * url - URL encoded in the QR code.
+    * previewurl - URL of the SVG preview.
+    * alt - Alternative text for the QR code.
+    * haswarnings, warnings - Access warnings.
+    * hasdownloads, downloads - Download buttons (format, label, url).
+    * printurl - URL of the print page.
+
+    Example context (json):
+    {
+        "cmid": 12,
+        "name": "Week 1 quiz",
+        "plainname": "Week 1 quiz",
+        "url": "https://moodle.example.org/mod/quiz/view.php?id=12",
+        "previewurl": "https://moodle.example.org/local/resourceqr/qr.php?cmid=12&format=svg&download=0",
+        "alt": "QR code linking to Week 1 quiz",
+        "haswarnings": true,
+        "warnings": [{"message": "This activity is hidden from students."}],
+        "hasdownloads": true,
+        "downloads": [
+            {"format": "png", "label": "Download PNG", "url": "https://moodle.example.org/local/resourceqr/qr.php?cmid=12&format=png&download=1"},
+            {"format": "svg", "label": "Download SVG", "url": "https://moodle.example.org/local/resourceqr/qr.php?cmid=12&format=svg&download=1"}
+        ],
+        "printurl": "https://moodle.example.org/local/resourceqr/print.php?cmid=12&autoprint=1"
+    }
+}}
+<div class="local-resourceqr-panel" data-region="local-resourceqr-panel" data-cmid="{{cmid}}" data-name="{{plainname}}">
+    {{#haswarnings}}
+    <div class="alert alert-warning local-resourceqr-warnings" role="status">
+        {{#warnings}}
+        <p class="local-resourceqr-warning">{{message}}</p>
+        {{/warnings}}
+    </div>
+    {{/haswarnings}}
+    <p class="local-resourceqr-name">{{{name}}}</p>
+    <div class="local-resourceqr-preview">
+        <img src="{{previewurl}}" alt="{{alt}}" width="300" height="300" class="local-resourceqr-image" data-region="local-resourceqr-image">
+    </div>
+    <p class="local-resourceqr-explanation">{{#str}} explanation, local_resourceqr {{/str}}</p>
+    <div class="local-resourceqr-url">
+        <label for="local-resourceqr-url-{{uniqid}}-{{cmid}}" class="local-resourceqr-urllabel">{{#str}} destinationurl, local_resourceqr {{/str}}</label>
+        <div class="local-resourceqr-urlrow">
+            <input type="text" readonly class="form-control local-resourceqr-urlinput" id="local-resourceqr-url-{{uniqid}}-{{cmid}}" value="{{url}}" dir="ltr">
+            <button type="button" class="btn btn-secondary" data-action="copytoclipboard"
+                data-clipboard-target="#local-resourceqr-url-{{uniqid}}-{{cmid}}"
+                data-clipboard-success-message="{{#str}} linkcopied, local_resourceqr {{/str}}">
+                {{#pix}} t/copy, core {{/pix}}{{#str}} copylink, local_resourceqr {{/str}}
+            </button>
+        </div>
+    </div>
+    <div class="local-resourceqr-actions">
+        {{#downloads}}
+        <a class="btn btn-primary" href="{{url}}" download data-action="local-resourceqr-download" data-format="{{format}}">
+            {{#pix}} t/download, core {{/pix}}{{label}}
+        </a>
+        {{/downloads}}
+        <a class="btn btn-secondary" href="{{printurl}}" target="_blank" data-action="local-resourceqr-print">
+            {{#pix}} t/print, core {{/pix}}{{#str}} print, local_resourceqr {{/str}}<span class="local-resourceqr-srtext"> {{#str}} opensinnewwindow, core {{/str}}</span>
+        </a>
+    </div>
+    {{^hasdownloads}}
+    <p class="local-resourceqr-nodownloads text-muted">{{#str}} nodownloadformats, local_resourceqr {{/str}}</p>
+    {{/hasdownloads}}
+</div>
