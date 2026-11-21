@@ -13,7 +13,7 @@ First release.
 - Designs: rounded (default), dots, square. The colour can be configured, and colours too light to
   scan are refused.
 - Optional site logo in the centre, with error-correction level H.
-- Capability `local/resourceqr:generate` (editing teachers and managers by default).
+- Capability `local/resourceqr:generate` controls who can generate QR codes.
 - Settings: enable, activity types, size, design, colour, error correction, logo, download formats.
 - Event `\local_resourceqr\event\qrcode_generated` for the logs. Privacy null provider.
 - Supports Moodle 4.5 LTS to 5.3 LTS.

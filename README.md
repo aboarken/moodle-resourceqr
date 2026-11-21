@@ -8,8 +8,7 @@ enrolment and access-restriction checks.
   service, no third-party library, and no images are stored.
 - Download as PNG or SVG, print, or copy the link.
 - Three designs (rounded, dots, square), a configurable colour and an optional site-logo centre.
-- One capability, `local/resourceqr:generate`, that you can grant at site, category, course or
-  activity level.
+- Access is controlled by one capability, `local/resourceqr:generate`.
 
 ---
 
@@ -17,12 +16,11 @@ enrolment and access-restriction checks.
 
 1. [Compatibility](#compatibility)
 2. [Installation](#installation)
-3. [Setting up roles](#setting-up-roles)
-4. [Administrator guide](#administrator-guide)
-5. [User guide](#user-guide)
-6. [Technical documentation](#technical-documentation)
-7. [Testing](#testing)
-8. [Known limitations](#known-limitations)
+3. [Administrator guide](#administrator-guide)
+4. [User guide](#user-guide)
+5. [Technical documentation](#technical-documentation)
+6. [Testing](#testing)
+7. [Known limitations](#known-limitations)
 
 ---
 
@@ -74,47 +72,7 @@ php admin/cli/upgrade.php
 
 (On 5.1 and later the CLI scripts are under `public/admin/cli/`.)
 
-After installation the plugin is enabled for every activity type. Editing teachers and managers
-can generate QR codes straight away.
-
-## Setting up roles
-
-Access is controlled only by the capability `local/resourceqr:generate` (context level: activity).
-Roles that have it by default: **Teacher** (editingteacher) and **Manager**.
-
-QR codes can only be made for activities the user can see. Users who are not enrolled in the course
-also need `moodle/course:view` to get into the course.
-
-### Course coordinators and academic coordinators (category level)
-
-1. *Site administration > Users > Permissions > Define roles > Add a new role*.
-2. Archetype: *No role*. Name: e.g. "QR code coordinator". Context types where this role may be
-   assigned: **Category** (and **Course** if you want).
-3. Allow:
-   - `local/resourceqr:generate`
-   - `moodle/course:view` (see courses without being enrolled)
-   - `moodle/course:viewhiddenactivities` (optional: also make codes for hidden activities)
-   - `moodle/course:ignoreavailabilityrestrictions` (optional: also make codes for activities with
-     access restrictions they don't meet)
-4. Assign the role in the category: *Category > More > Permissions > Assign roles*. It applies to
-   every course in that category and its subcategories.
-
-### Non-teaching staff (course level)
-
-Create a role in the same way (e.g. "QR code generator", context type **Course**) with
-`local/resourceqr:generate` and `moodle/course:view`, then assign it in each course through
-*Course > Participants > Enrolment methods* or *More > Permissions > Assign roles* (other users).
-
-### Other cases
-
-- **Non-editing teachers:** override the Non-editing teacher role and allow `local/resourceqr:generate`
-  (site-wide, or per course in *Permissions*).
-- **One activity only:** assign or override at activity level from the activity's
-  *More > Permissions*.
-- **Prevent for an activity:** set the capability to *Prevent* in that activity's permissions.
-
-Students and other users without the capability never see the action, and every request to the
-plugin's pages, image endpoint and web service is refused for them.
+After installation the plugin is enabled for every activity type.
 
 ## Administrator guide
 
@@ -134,15 +92,11 @@ plugin's pages, image endpoint and web service is refused for them.
 | Show site logo in centre | No | Uses the compact logo (or the full logo if there is no compact logo) from *Appearance > Logos*. The logo and its white padding take up no more than 20% of the code's width. |
 | Allowed download formats | PNG, SVG | At least one is required. The on-screen preview is always SVG. |
 
-### Capabilities
+### Capability
 
-| Capability | Context | Default roles | Risk |
-|---|---|---|---|
-| `local/resourceqr:generate` | Activity (can be set at any level above) | editingteacher, manager | None |
-
-No other capability is added. A separate "generate for activities you can't see" capability was
-deliberately left out: making codes for activities you can't open would reveal them, and teachers
-already see hidden activities through `moodle/course:viewhiddenactivities`.
+Access is controlled by a single capability, `local/resourceqr:generate` (activity context, no
+risks). It is managed like any other Moodle capability, in *Site administration > Users >
+Permissions*. QR codes can only be generated for activities the user is able to see.
 
 ### Logs
 
@@ -322,8 +276,7 @@ npx grunt amd --root=local/resourceqr
 ### Automated tests in this repository
 
 - `tests/*_test.php`, `tests/external/`, `tests/privacy/`: PHPUnit. They cover:
-  - access rules for each role scenario: editing teacher, non-editing teacher, coordinator role at
-    category level, non-teaching staff role at course level, manager, student, user not enrolled;
+  - access rules: users with and without the capability, and users not enrolled in the course;
   - hidden, stealth, hidden-section and restricted activities;
   - disabled plugin and disabled module types;
   - URL resolution for 16 module types, and modules without a view page;
@@ -331,8 +284,7 @@ npx grunt amd --root=local/resourceqr
     installed), every design, every error-correction level, and the logo;
   - settings validation, the event, the external function, navigation, file names and privacy.
 - `tests/behat/resourceqr.feature`: the action for authorised and unauthorised users; the dialogue
-  (name, QR, URL, copy, downloads, print); hidden warning; format restriction; category
-  coordinator; disabled plugin; no-JavaScript page; Classic theme; mobile viewport.
+  (name, QR, URL, copy, downloads, print); hidden warning; format restriction; disabled plugin; no-JavaScript page; Classic theme; mobile viewport.
 - `.github/workflows/ci.yml`: moodle-plugin-ci on Moodle 4.5, 5.0, 5.1, 5.2 and 5.3 (PHP 8.3, plus
   8.4 on 5.3) with PostgreSQL 17. It runs phplint, phpcs (moodle-cs), phpdoc, validate, savepoints,
   mustache, grunt, PHPUnit and Behat, and installs `zbar-tools` for the decoding tests.
@@ -345,7 +297,7 @@ npx grunt amd --root=local/resourceqr
 | PHPUnit, Moodle 5.2.5, PHP 8.3, PostgreSQL 16 (PHPUnit 11) | 101 tests pass, no deprecations |
 | phpcs `moodle-extra` (moodlehq/moodle-cs) | No errors or warnings |
 | Grunt `amd` (ESLint + build), `stylelint`, `gherkinlint` with Moodle 4.5's tooling | Pass |
-| Browser check on a real 4.5.16 site (Playwright/Chromium) | Boost, Classic and a 390 px phone screen: menu item, dialogue, preview, PNG/SVG downloads (files decode), copy link toast, Escape closes and returns focus to the More menu, hidden-activity warning, print page, student sees no item and gets "no permission" on every page |
+| Browser check on a real 4.5.16 site (Playwright/Chromium) | Boost, Classic and a 390 px phone screen: menu item, dialogue, preview, PNG/SVG downloads (files decode), copy link toast, Escape closes and returns focus to the More menu, hidden-activity warning, print page, a user without the capability sees no item and gets "no permission" on every page |
 | Decoding of 144 generated images (3 designs × with/without logo × levels L/M/Q/H × 200/600/2000 px, PNG and Chromium-rendered SVG) with zbarimg | All decode to the right URL |
 
 **Not run locally:**
@@ -362,17 +314,16 @@ npx grunt amd --root=local/resourceqr
 
 ### Still to check on your own site
 
-1. Install on your Moodle 4.5 site and check the item appears under **More** for a teacher.
+1. Install on your Moodle 4.5 site and check the item appears under **More** for a user who has the capability.
 2. Scan a printed code with the phones your staff and students use (including the Moodle app, see
    below).
 3. If you turn on the site logo, scan a code that has it.
-4. Check your custom coordinator and staff roles work as you expect.
 
 ## Known limitations
 
 - **Menu location:** the action is in the activity's **More** menu (or the Classic *Administration*
   block), not in the three-dot menu on the course page. Moodle offers local plugins no supported
-  way to add to that menu. Teachers open the activity first, then use **More > Generate QR code**.
+  way to add to that menu. Users open the activity first, then use **More > Generate QR code**.
 - **Activities without their own page** (Text and media area / `mod_label`, subsections /
   `mod_subsection`, question banks / `mod_qbank`) can't have a QR code. The action isn't shown for
   them.
