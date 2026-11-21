@@ -289,17 +289,61 @@ class qr_generator {
      */
     public function get_matrix(): array {
         if ($this->matrix === null) {
-            $barcode = new \TCPDF2DBarcode($this->data, 'QRCODE,' . $this->level);
-            $array = $barcode->getBarcodeArray();
-            if (empty($array['bcode']) || empty($array['num_cols'])) {
-                throw new moodle_exception('error:generation', 'local_resourceqr');
-            }
-            $this->matrix = [];
-            foreach ($array['bcode'] as $row) {
-                $this->matrix[] = array_map(fn($v) => (bool) $v, array_values($row));
-            }
+            $this->matrix = $this->encode();
         }
         return $this->matrix;
+    }
+
+    /**
+     * Run the core QR encoder and check its result.
+     *
+     * The encoder's tight loops have been seen to misbehave under the PHP 8.4 JIT
+     * compiler ("Trying to access array offset on null" in TCPDF's qrcode.php, only
+     * with opcache.jit enabled), so JIT is switched off while it runs. Any PHP
+     * warning from the encoder, or a result that is not a valid QR symbol, becomes
+     * a clean exception instead of a corrupt image.
+     *
+     * @return bool[][] Rows of modules, true = dark.
+     * @throws moodle_exception
+     */
+    private function encode(): array {
+        $jit = ini_get('opcache.jit');
+        $jiton = is_string($jit) && !in_array(strtolower($jit), ['', '0', 'off', 'disable'], true);
+        if ($jiton) {
+            @ini_set('opcache.jit', 'off');
+        }
+        set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
+            if (!(error_reporting() & $errno) || in_array($errno, [E_DEPRECATED, E_USER_DEPRECATED], true)) {
+                return true;
+            }
+            throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+        });
+        try {
+            $barcode = new \TCPDF2DBarcode($this->data, 'QRCODE,' . $this->level);
+            $array = $barcode->getBarcodeArray();
+        } catch (\Throwable $e) {
+            throw new moodle_exception('error:generation', 'local_resourceqr', '', null, $e->getMessage());
+        } finally {
+            restore_error_handler();
+            if ($jiton) {
+                @ini_set('opcache.jit', $jit);
+            }
+        }
+
+        $matrix = [];
+        foreach (($array['bcode'] ?? []) as $row) {
+            $matrix[] = array_map(fn($v) => (bool) $v, array_values((array) $row));
+        }
+        // A QR symbol is square, with 21 + 4k modules per side (versions 1 to 40).
+        $n = count($matrix);
+        $valid = $n >= 21 && $n <= 177 && ($n - 21) % 4 === 0;
+        foreach ($matrix as $row) {
+            $valid = $valid && count($row) === $n;
+        }
+        if (!$valid) {
+            throw new moodle_exception('error:generation', 'local_resourceqr', '', null, 'Invalid QR matrix size ' . $n);
+        }
+        return $matrix;
     }
 
     /**

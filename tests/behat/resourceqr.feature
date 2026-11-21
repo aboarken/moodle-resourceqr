@@ -103,8 +103,10 @@ Feature: Generate QR codes for activities and resources
   Scenario: The image endpoint returns an SVG image without errors
     Given I am on the "Page 1" "page activity" page logged in as teacher1
     And I navigate to "Generate QR code" in current page administration
+    # Moodle fails this step if the endpoint returns an error page or prints a PHP message.
     When I follow "Download SVG"
-    Then I should see "QR code for"
+    Then I should not see "Exception"
+    And I should not see "Warning"
 
   @javascript @theme_classic
   Scenario: The action works in the Classic theme

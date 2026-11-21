@@ -242,6 +242,19 @@ final class qr_generator_test extends \advanced_testcase {
     }
 
     /**
+     * Many different URLs encode to valid symbols without PHP messages.
+     */
+    public function test_many_urls(): void {
+        foreach (['L', 'M', 'Q', 'H'] as $level) {
+            for ($id = 1; $id <= 60; $id++) {
+                $url = 'http://localhost:8000/mod/quiz/view.php?id=' . ($id * 3371);
+                $n = count((new qr_generator($url, $level))->get_matrix());
+                $this->assertSame(0, ($n - 21) % 4);
+            }
+        }
+    }
+
+    /**
      * Higher levels make a denser symbol.
      */
     public function test_levels_change_density(): void {
