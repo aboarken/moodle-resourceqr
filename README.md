@@ -20,7 +20,8 @@ enrolment and access-restriction checks.
 4. [User guide](#user-guide)
 5. [Technical documentation](#technical-documentation)
 6. [Testing](#testing)
-7. [Known limitations](#known-limitations)
+7. [Security](#security)
+8. [Known limitations](#known-limitations)
 
 ---
 
@@ -344,6 +345,14 @@ npx grunt amd --root=local/resourceqr
 2. Scan a printed code with the phones your staff and students use (including the Moodle app, see
    below).
 3. If you turn on the site logo, scan a code that has it.
+
+## Security
+
+To report a security problem, see [SECURITY.md](SECURITY.md) (privately, through the repository's
+**Security** tab; never in a public issue). The "Release package" workflow runs with read-only
+permissions except for the release step, its actions are pinned to exact commits and kept up to
+date by Dependabot (`.github/dependabot.yml`), and changes to the workflow and the plugin's access
+checks are reviewed by the code owner (`.github/CODEOWNERS`).
 
 ## Known limitations
 

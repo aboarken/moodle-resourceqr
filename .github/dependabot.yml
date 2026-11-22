@@ -1,0 +1,12 @@
+# Dependabot (security): keeps the GitHub Actions the "Release package" workflow uses up to date.
+# They are pinned to exact commits, so a new version arrives only as a pull request to review,
+# never by itself.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
