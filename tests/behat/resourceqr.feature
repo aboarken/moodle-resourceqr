@@ -97,6 +97,16 @@ Feature: Generate QR codes for activities and resources
     Then I should see "##+30 days##%d %B %Y##" in the "[data-region='local-resourceqr-expiry']" "css_element"
     And "input.local-resourceqr-urlinput[value*='/local/resourceqr/go.php?id=']" "css_element" should exist
 
+  Scenario: An administrator cancels all expiring QR codes
+    Given I log in as "admin"
+    And I navigate to "Plugins > Local plugins > Resource QR Code" in site administration
+    And I should see "Expiring QR codes have never been cancelled on this site."
+    When I click on "Cancel all expiring QR codes" "link"
+    And I should see "Lifetime QR codes are not affected. This cannot be undone."
+    And I press "Cancel all expiring QR codes"
+    Then I should see "All QR codes with an expiry date have been cancelled."
+    And I should see "Last cancelled:"
+
   Scenario: Students do not see the course QR codes page
     Given I am on the "Course 1" "course" page logged in as student1
     Then "QR codes" "link" should not exist

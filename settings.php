@@ -27,6 +27,14 @@ defined('MOODLE_INTERNAL') || die();
 if ($hassiteconfig) {
     $settings = new admin_settingpage('local_resourceqr', new lang_string('pluginname', 'local_resourceqr'));
     $ADMIN->add('localplugins', $settings);
+    // Confirmation page for cancelling every QR code with an expiry date (linked from the settings below).
+    $ADMIN->add('localplugins', new admin_externalpage(
+        'local_resourceqr_resetlinks',
+        new lang_string('resetlinks', 'local_resourceqr'),
+        new moodle_url('/local/resourceqr/resetlinks.php'),
+        'moodle/site:config',
+        true
+    ));
 
     if ($ADMIN->fulltree) {
         if (!\local_resourceqr\local\qr_generator::png_supported()) {
@@ -116,6 +124,22 @@ if ($hassiteconfig) {
             'local_resourceqr/formats',
             new lang_string('formats', 'local_resourceqr'),
             new lang_string('formats_desc', 'local_resourceqr')
+        ));
+
+        $lastreset = \local_resourceqr\local\expiry::last_reset();
+        $settings->add(new admin_setting_heading(
+            'local_resourceqr/resetlinksheading',
+            new lang_string('resetlinks', 'local_resourceqr'),
+            html_writer::tag('p', get_string('resetlinks_desc', 'local_resourceqr')) .
+            html_writer::tag('p', $lastreset
+                ? get_string('resetlinks_last', 'local_resourceqr', userdate($lastreset))
+                : get_string('resetlinks_never', 'local_resourceqr')) .
+            // A link, not a button: this text is shown inside the settings form, and forms cannot be nested.
+            html_writer::link(
+                new moodle_url('/local/resourceqr/resetlinks.php'),
+                get_string('resetlinks', 'local_resourceqr'),
+                ['class' => 'btn btn-secondary']
+            )
         ));
     }
 }

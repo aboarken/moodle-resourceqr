@@ -54,6 +54,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: plugin
+          # The tests never push: do not leave the GitHub token in the checkout.
+          persist-credentials: false
 
       - name: Setup PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
@@ -139,6 +141,9 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The release is created with the gh CLI and GH_TOKEN, not git: no token in the checkout.
+          persist-credentials: false
 
       - name: Work out the release from version.php
         id: version

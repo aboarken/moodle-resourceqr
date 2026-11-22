@@ -140,6 +140,34 @@ final class expiry_test extends \advanced_testcase {
     }
 
     /**
+     * Cancelling all expiring QR codes: old links stop working, new ones work, lifetime links are unchanged.
+     */
+    public function test_reset_secret(): void {
+        global $DB;
+        $cmid = (int) $this->page->cmid;
+        $expires = time() + DAYSECS;
+        $oldsignature = expiry::sign($cmid, $expires);
+        $lifetime = access::get_qr_url($this->cm(), 0)->out(false);
+        $this->assertSame(0, expiry::last_reset());
+
+        expiry::reset_secret();
+
+        $this->assertSame([expiry::INVALID, null], expiry::resolve($cmid, $expires, $oldsignature));
+        $newsignature = expiry::sign($cmid, $expires);
+        $this->assertNotSame($oldsignature, $newsignature);
+        $this->assertSame(expiry::VALID, expiry::resolve($cmid, $expires, $newsignature)[0]);
+        $this->assertSame($lifetime, access::get_qr_url($this->cm(), 0)->out(false));
+        $this->assertEqualsWithDelta(time(), expiry::last_reset(), 5);
+
+        // Recorded in the configuration changes report, without the secret.
+        $log = $DB->get_records('config_log', ['plugin' => 'local_resourceqr', 'name' => 'secret']);
+        $this->assertCount(1, $log);
+        $entry = reset($log);
+        $this->assertSame('', (string) $entry->oldvalue);
+        $this->assertStringNotContainsString((string) get_config('local_resourceqr', 'secret'), (string) $entry->value);
+    }
+
+    /**
      * A dated QR code image encodes the signed link and is logged with its expiry.
      */
     public function test_image_with_expiry(): void {

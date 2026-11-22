@@ -69,6 +69,28 @@ class expiry {
     }
 
     /**
+     * Cancel every QR code with an expiry date by replacing the site secret.
+     *
+     * Links signed with the old secret show "QR code not valid" from now on. Lifetime QR
+     * codes hold the activity's own link and are not affected. The change is recorded in
+     * the configuration changes report, without the secret itself.
+     */
+    public static function reset_secret(): void {
+        set_config('secret', random_string(64), 'local_resourceqr');
+        set_config('secretreset', time(), 'local_resourceqr');
+        add_to_config_log('secret', '', get_string('resetlinks_logvalue', 'local_resourceqr'), 'local_resourceqr');
+    }
+
+    /**
+     * When the expiring QR codes were last cancelled.
+     *
+     * @return int Unix timestamp, or 0 if never.
+     */
+    public static function last_reset(): int {
+        return (int) get_config('local_resourceqr', 'secretreset');
+    }
+
+    /**
      * Signature for a course module and expiry time.
      *
      * @param int $cmid

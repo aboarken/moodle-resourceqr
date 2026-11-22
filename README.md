@@ -92,6 +92,19 @@ After installation the plugin is enabled for every activity type.
 | Error correction level | M | L, M, Q or H. Forced to H when the logo is shown. |
 | Show site logo in centre | No | Uses the compact logo (or the full logo if there is no compact logo) from *Appearance > Logos*. The logo and its white padding take up no more than 20% of the code's width. |
 | Allowed download formats | PNG, SVG | At least one is required. The on-screen preview is always SVG. |
+| Cancel all expiring QR codes | (button) | Stops every QR code with an expiry date from working, straight away, after a confirmation. See *Cancelling expiring QR codes* below. |
+
+### Cancelling expiring QR codes
+
+If a QR code with an expiry date was shared with the wrong people, a site administrator can stop
+it before its date: **Cancel all expiring QR codes** at the bottom of the plugin settings, then
+confirm. The plugin's signing key is replaced, so every QR code with an expiry date made before
+then shows "QR code not valid" when scanned. QR codes made afterwards work as usual. This applies
+to the whole site and cannot be undone. The settings page shows when it was last done, and it is
+recorded in *Reports > Config changes* (the key itself is never shown).
+
+Lifetime QR codes hold the activity's own link and are not affected: to stop one, hide or delete
+the activity.
 
 ### Capability
 
@@ -221,7 +234,8 @@ More > Generate QR code (link to view.php?cmid=N)
 | `lib.php` | Activity and course navigation callbacks, and the Font Awesome icon map. |
 | `view.php` | Stand-alone page (no-JavaScript fallback). |
 | `go.php` | Public link held by QR codes with an expiry date: redirects to the activity until the date, then shows that the code has expired. |
-| `classes/local/expiry.php` | Signs and checks expiring links (HMAC-SHA256 with a site secret), converts dates. |
+| `classes/local/expiry.php` | Signs and checks expiring links (HMAC-SHA256 with a site secret), converts dates, replaces the secret to cancel them. |
+| `resetlinks.php` | Confirmation page for *Cancel all expiring QR codes* (`moodle/site:config`, POST with sesskey). |
 | `course.php` | Course "QR codes" page listing the course's activities and resources. |
 | `print.php` | Print page: name, code and URL only (`embedded` layout plus print CSS). |
 | `qr.php` | Image endpoint. `cmid` (`PARAM_INT`), `format` (`PARAM_ALPHA`, `png`/`svg`), `download` (`PARAM_BOOL`). |
@@ -352,7 +366,8 @@ To report a security problem, see [SECURITY.md](SECURITY.md) (privately, through
 **Security** tab; never in a public issue). The "Release package" workflow runs with read-only
 permissions except for the release step, its actions are pinned to exact commits and kept up to
 date by Dependabot (`.github/dependabot.yml`), and changes to the workflow and the plugin's access
-checks are reviewed by the code owner (`.github/CODEOWNERS`).
+checks are reviewed by the code owner (`.github/CODEOWNERS`). The workflow does not keep its
+GitHub token in the checked-out files.
 
 ## Known limitations
 

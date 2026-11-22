@@ -1,5 +1,14 @@
 # Changes
 
+## 0.2.1 (2026-11-24)
+
+- **Cancel all expiring QR codes:** a new button at the bottom of the plugin settings (site
+  administrators, after a confirmation) stops every QR code with an expiry date from working
+  straight away, for example if one was shared with the wrong people. People who scan one see
+  "QR code not valid". Lifetime QR codes are not affected. The settings page shows when it was
+  last done, and it is recorded in the configuration changes report.
+- The "Release package" workflow no longer keeps its GitHub token in the checked-out files.
+
 ## 0.2.0 (2026-11-23)
 
 - **Lifetime or expiry date:** under **Validity** in the QR code dialogue, choose *Lifetime (never
