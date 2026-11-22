@@ -1,0 +1,80 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_resourceqr/course_list
+
+    Course "QR codes" page: the course's activities and resources, by section, each with a QR code button.
+
+    Context variables required for this template:
+    * hasitems - Whether there is anything to list.
+    * sections - Sections with items (name, items).
+    * items - cmid, name (already formatted), plainname, modname, iconurl, url, haswarnings, warnings.
+
+    Example context (json):
+    {
+        "hasitems": true,
+        "sections": [
+            {
+                "name": "Week 1",
+                "items": [
+                    {
+                        "cmid": 12,
+                        "name": "Course handbook",
+                        "plainname": "Course handbook",
+                        "modname": "File",
+                        "iconurl": "https://moodle.example.org/theme/image.php/boost/resource/1/monologo",
+                        "url": "https://moodle.example.org/local/resourceqr/view.php?cmid=12",
+                        "haswarnings": true,
+                        "warnings": [{"message": "This activity is hidden from students. Some users may not be able to open it."}]
+                    }
+                ]
+            }
+        ]
+    }
+}}
+<div class="local-resourceqr-courselist" data-region="local-resourceqr-courselist">
+    <p>{{#str}} courseqrcodes_desc, local_resourceqr {{/str}}</p>
+    {{#hasitems}}
+    {{#sections}}
+    <section class="local-resourceqr-section">
+        <h3 class="local-resourceqr-sectionname">{{{name}}}</h3>
+        <ul class="local-resourceqr-items">
+            {{#items}}
+            <li class="local-resourceqr-item" data-cmid="{{cmid}}">
+                <img src="{{iconurl}}" alt="" class="local-resourceqr-itemicon" width="24" height="24">
+                <div class="local-resourceqr-itemtext">
+                    <span class="local-resourceqr-itemname">{{{name}}}</span>
+                    <span class="local-resourceqr-itemtype text-muted">{{modname}}</span>
+                    {{#haswarnings}}
+                    {{#warnings}}
+                    <span class="local-resourceqr-itemwarning">{{message}}</span>
+                    {{/warnings}}
+                    {{/haswarnings}}
+                </div>
+                <a class="btn btn-secondary local-resourceqr-itembutton" href="{{url}}">
+                    {{#pix}} qrcode, local_resourceqr {{/pix}}{{#str}} generateqrcode, local_resourceqr {{/str}}<span class="local-resourceqr-srtext">: {{plainname}}</span>
+                </a>
+            </li>
+            {{/items}}
+        </ul>
+    </section>
+    {{/sections}}
+    {{/hasitems}}
+    {{^hasitems}}
+    <p class="alert alert-info">{{#str}} courseqrcodes_none, local_resourceqr {{/str}}</p>
+    {{/hasitems}}
+</div>
