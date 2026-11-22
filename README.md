@@ -115,6 +115,13 @@ Its events are stored by the site's log stores, which handle privacy requests fo
 
 ### Making a QR code
 
+**For any activity or file in a course:** on the course page, open **More** in the course menu (in
+Classic, the *Course administration* block) and choose **QR codes**. The page lists the course's
+activities and resources by section; choose **Generate QR code** next to the one you want. This is
+the easiest way to find QR codes, and it works for files that open or download straight away.
+
+**From inside an activity:**
+
 1. Open the activity or resource (for example the quiz or the file).
 2. In Boost-based themes, open **More** in the menu under the activity name and choose
    **Generate QR code**. In Classic, use **Generate QR code** in the *Administration* block.
@@ -194,8 +201,9 @@ More > Generate QR code (link to view.php?cmid=N)
 
 | Path | Purpose |
 |---|---|
-| `lib.php` | Settings navigation callback and Font Awesome icon map. |
+| `lib.php` | Activity and course navigation callbacks, and the Font Awesome icon map. |
 | `view.php` | Stand-alone page (no-JavaScript fallback). |
+| `course.php` | Course "QR codes" page listing the course's activities and resources. |
 | `print.php` | Print page: name, code and URL only (`embedded` layout plus print CSS). |
 | `qr.php` | Image endpoint. `cmid` (`PARAM_INT`), `format` (`PARAM_ALPHA`, `png`/`svg`), `download` (`PARAM_BOOL`). |
 | `classes/local/access.php` | All access rules, the encoded URL, warnings and download formats. |

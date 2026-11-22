@@ -2,6 +2,10 @@
 
 ## 0.1.1 (2026-11-22)
 
+- New **QR codes** page for each course, in the course's **More** menu (Course administration in
+  Classic). It lists the course's activities and resources by section, each with a **Generate QR
+  code** button, so QR codes are easier to find. It also covers files set to open or download
+  straight away, whose own page teachers never see.
 - The "Generate QR code" menu icon is now a Font Awesome icon, so it takes the theme's icon colour
   like Moodle's own menu items. Previously it was a fixed-colour image.
 

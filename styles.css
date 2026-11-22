@@ -65,6 +65,54 @@
     }
 }
 
+/* Course QR codes page. */
+.local-resourceqr-courselist .local-resourceqr-section {
+    margin-bottom: 1.5rem;
+}
+
+.local-resourceqr-courselist .local-resourceqr-sectionname {
+    font-size: 1.15rem;
+    margin-bottom: .5rem;
+}
+
+.local-resourceqr-courselist .local-resourceqr-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.local-resourceqr-courselist .local-resourceqr-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.local-resourceqr-courselist .local-resourceqr-itemtext {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 14rem;
+    min-width: 0;
+}
+
+.local-resourceqr-courselist .local-resourceqr-itemname {
+    font-weight: bold;
+}
+
+/* Dark amber: about 7:1 contrast on white (WCAG AA needs 4.5:1). */
+.local-resourceqr-courselist .local-resourceqr-itemwarning {
+    color: #7a4a00;
+    font-size: .9rem;
+}
+
+@media (max-width: 575.98px) {
+    .local-resourceqr-courselist .local-resourceqr-itembutton {
+        flex: 1 1 100%;
+    }
+}
+
 /* Print page. */
 .local-resourceqr-print {
     text-align: center;

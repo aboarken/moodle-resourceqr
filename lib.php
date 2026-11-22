@@ -86,6 +86,34 @@ function local_resourceqr_extend_settings_navigation(settings_navigation $settin
 }
 
 /**
+ * Add "QR codes" to the course's navigation.
+ *
+ * In Boost-based themes it appears in the course's "More" menu; in Classic, in the
+ * Course administration block. It opens a page listing the course's activities and
+ * resources, each with a button to generate its QR code.
+ *
+ * @param navigation_node $navigation The course navigation node.
+ * @param stdClass $course The course.
+ * @param context $context The course context.
+ */
+function local_resourceqr_extend_navigation_course(navigation_node $navigation, stdClass $course, context $context): void {
+    if (
+        !\local_resourceqr\local\access::is_enabled()
+            || !has_capability(\local_resourceqr\local\access::CAPABILITY, $context)
+    ) {
+        return;
+    }
+    $navigation->add(
+        get_string('courseqrcodes', 'local_resourceqr'),
+        new moodle_url('/local/resourceqr/course.php', ['id' => $course->id]),
+        navigation_node::TYPE_SETTING,
+        null,
+        'local_resourceqr_course',
+        new pix_icon('qrcode', '', 'local_resourceqr')
+    );
+}
+
+/**
  * Font Awesome icons used by this plugin.
  *
  * Mapping the menu icon to a font icon makes it use the theme's icon colours,

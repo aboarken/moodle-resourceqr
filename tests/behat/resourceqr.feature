@@ -77,6 +77,19 @@ Feature: Generate QR codes for activities and resources
     When I navigate to "Generate QR code" in current page administration
     Then I should see "Page 1" in the "QR code: Page 1" "dialogue"
 
+  @javascript
+  Scenario: A teacher generates a QR code from the course QR codes page
+    Given I am on the "Course 1" "course" page logged in as teacher1
+    When I navigate to "QR codes" in current page administration
+    Then I should see "Quiz 1" in the "Quiz 1" "list_item"
+    And I should see "Page 1" in the "Page 1" "list_item"
+    And I click on "Generate QR code" "link" in the "Quiz 1" "list_item"
+    And I should see "Scan this QR code to open this Moodle resource or activity. You may need to log in to Moodle first." in the "QR code: Quiz 1" "dialogue"
+
+  Scenario: Students do not see the course QR codes page
+    Given I am on the "Course 1" "course" page logged in as student1
+    Then "QR codes" "link" should not exist
+
   Scenario Outline: Users without the capability do not see the action
     Given I am on the "Page 1" "page activity" page logged in as <user>
     Then "Generate QR code" "link" should not exist
