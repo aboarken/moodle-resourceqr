@@ -87,6 +87,16 @@ Feature: Generate QR codes for activities and resources
     And I click on "Generate QR code: Quiz 1" "link" in the "[data-region='local-resourceqr-courselist']" "css_element"
     And I should see "Scan this QR code to open this Moodle resource or activity. You may need to log in to Moodle first." in the "QR code: Quiz 1" "dialogue"
 
+  Scenario: A teacher makes a QR code that expires on a date
+    Given I am on the "Page 1" "page activity" page logged in as teacher1
+    And I navigate to "Generate QR code" in current page administration
+    And "input.local-resourceqr-urlinput[value*='/mod/page/view.php']" "css_element" should exist
+    When I set the field "Valid until" to "1"
+    And I set the field "expirydate" to "##+30 days##%Y-%m-%d##"
+    And I press "Apply"
+    Then I should see "##+30 days##%d %B %Y##" in the "[data-region='local-resourceqr-expiry']" "css_element"
+    And "input.local-resourceqr-urlinput[value*='/local/resourceqr/go.php?id=']" "css_element" should exist
+
   Scenario: Students do not see the course QR codes page
     Given I am on the "Course 1" "course" page logged in as student1
     Then "QR codes" "link" should not exist

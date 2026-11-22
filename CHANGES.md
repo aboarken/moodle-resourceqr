@@ -1,5 +1,13 @@
 # Changes
 
+## 0.2.0 (2026-11-23)
+
+- **Lifetime or expiry date:** under **Validity** in the QR code dialogue, choose *Lifetime (never
+  expires)* or *Valid until* a date. A QR code with an expiry date holds a signed link
+  (`go.php`) that takes people to the activity until the end of that day and then shows that the
+  code has expired. Lifetime QR codes are unchanged. The downloads, print page and file names show
+  the expiry date.
+
 ## 0.1.1 (2026-11-22)
 
 - New **QR codes** page for each course, in the course's **More** menu (Course administration in

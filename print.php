@@ -28,13 +28,17 @@ use local_resourceqr\local\access;
 
 $cmid = required_param('cmid', PARAM_INT);
 $autoprint = optional_param('autoprint', 0, PARAM_BOOL);
+$expires = optional_param('expires', 0, PARAM_INT);
 
 [$course, $cm] = get_course_and_cm_from_cmid($cmid);
 require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 access::require_generate($cm);
+if (!\local_resourceqr\local\expiry::is_valid_expiry($expires)) {
+    throw new moodle_exception('error:expirydate', 'local_resourceqr');
+}
 
-$PAGE->set_url(new moodle_url('/local/resourceqr/print.php', ['cmid' => $cm->id]));
+$PAGE->set_url(new moodle_url('/local/resourceqr/print.php', array_filter(['cmid' => $cm->id, 'expires' => $expires])));
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('embedded');
 $PAGE->set_title(get_string('qrcodetitle', 'local_resourceqr', $cm->get_formatted_name()));
@@ -42,7 +46,7 @@ $PAGE->add_body_class('local-resourceqr-printpage');
 $PAGE->activityheader->disable();
 $PAGE->requires->js_call_amd('local_resourceqr/print', 'init', [(bool) $autoprint]);
 
-$data = (new \local_resourceqr\output\qrcode_panel($cm))->export_for_template($OUTPUT);
+$data = (new \local_resourceqr\output\qrcode_panel($cm, $expires))->export_for_template($OUTPUT);
 
 echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('local_resourceqr/print', $data);

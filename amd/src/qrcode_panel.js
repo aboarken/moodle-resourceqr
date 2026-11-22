@@ -14,7 +14,8 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Behaviour of the QR code panel: downloads with feedback, image errors and copy link.
+ * Behaviour of the QR code panel: validity (lifetime or expiry date), downloads with
+ * feedback, image errors and copy link.
  *
  * @module     local_resourceqr/qrcode_panel
  * @copyright  2026 Resource QR Code contributors
@@ -22,7 +23,9 @@
  */
 
 import 'core/copy_to_clipboard';
+import Ajax from 'core/ajax';
 import Pending from 'core/pending';
+import Templates from 'core/templates';
 import {add as addToast} from 'core/toast';
 import {getString} from 'core/str';
 
@@ -96,6 +99,39 @@ const handleImageError = async(image) => {
 };
 
 /**
+ * Reload a panel for the validity chosen in its form.
+ *
+ * @param {HTMLFormElement} form The panel's validity form.
+ * @param {string} focuscontrol Which control to focus afterwards (lifetime, until, date or apply).
+ */
+const applyValidity = async(form, focuscontrol) => {
+    const panel = form.closest('[data-region="local-resourceqr-panel"]');
+    const until = form.querySelector('[data-validity-control="until"]').checked;
+    const date = form.querySelector('[data-validity-control="date"]').value;
+    if (!panel || (until && !date)) {
+        return;
+    }
+    const pending = new Pending('local_resourceqr/qrcode_panel:validity');
+    try {
+        const data = await Ajax.call([{
+            methodname: 'local_resourceqr_get_qrcode_data',
+            args: {cmid: parseInt(panel.dataset.cmid, 10), expirydate: until ? date : ''},
+        }])[0];
+        const {html, js} = await Templates.renderForPromise('local_resourceqr/qrcode_panel', data);
+        const newpanel = Templates.replaceNode(panel, html, js)
+            .find((node) => node.nodeType === Node.ELEMENT_NODE && node.matches('[data-region="local-resourceqr-panel"]'));
+        if (newpanel) {
+            enhance(newpanel);
+            newpanel.querySelector(`[data-validity-control="${focuscontrol}"]`)?.focus();
+        }
+    } catch (error) {
+        const message = error?.message || await getString('error:expirydate', 'local_resourceqr');
+        addToast(message, {type: 'danger'});
+    }
+    pending.resolve();
+};
+
+/**
  * Add behaviour to a panel.
  *
  * @param {HTMLElement} container Element containing the panel.
@@ -113,6 +149,28 @@ export const enhance = (container) => {
         return;
     }
     listening = true;
+
+    // Validity: apply as soon as it changes; the Apply button is for use without JavaScript.
+    const validityForm = (target) => target.closest('[data-region="local-resourceqr-validity"]');
+    document.addEventListener('change', (e) => {
+        const form = validityForm(e.target);
+        if (!form) {
+            return;
+        }
+        const control = e.target.dataset.validityControl;
+        if (control === 'date') {
+            form.querySelector('[data-validity-control="until"]').checked = true;
+        }
+        applyValidity(form, control);
+    });
+    document.addEventListener('submit', (e) => {
+        const form = validityForm(e.target);
+        if (form) {
+            e.preventDefault();
+            applyValidity(form, 'apply');
+        }
+    });
+
     document.addEventListener('click', (e) => {
         const link = e.target.closest('[data-region="local-resourceqr-panel"] [data-action="local-resourceqr-download"]');
         if (!link || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {

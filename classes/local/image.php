@@ -58,11 +58,15 @@ class image {
      * @param cm_info $cm Course module for the current user.
      * @param string $format 'png' or 'svg'.
      * @param bool $download True for a download, false for the preview.
+     * @param int $expires Expiry time (Unix timestamp), or 0 for a lifetime QR code.
      * @return self
      * @throws moodle_exception
      */
-    public static function create(cm_info $cm, string $format, bool $download): self {
+    public static function create(cm_info $cm, string $format, bool $download, int $expires = 0): self {
         access::require_generate($cm);
+        if (!expiry::is_valid_expiry($expires)) {
+            throw new moodle_exception('error:expirydate', 'local_resourceqr');
+        }
 
         if (!in_array($format, [access::FORMAT_PNG, access::FORMAT_SVG], true)) {
             throw new moodle_exception('error:invalidformat', 'local_resourceqr');
@@ -76,17 +80,17 @@ class image {
             throw new moodle_exception('error:nopng', 'local_resourceqr');
         }
 
-        $generator = qr_generator::from_config(access::get_target_url($cm)->out(false));
+        $generator = qr_generator::from_config(access::get_qr_url($cm, $expires)->out(false));
         if ($format === access::FORMAT_PNG) {
-            $image = new self($generator->png(), 'image/png', filename::for_cm($cm, $format));
+            $image = new self($generator->png(), 'image/png', filename::for_cm($cm, $format, $expires));
         } else {
-            $image = new self($generator->svg(), 'image/svg+xml', filename::for_cm($cm, $format));
+            $image = new self($generator->svg(), 'image/svg+xml', filename::for_cm($cm, $format, $expires));
         }
 
         \local_resourceqr\event\qrcode_generated::create([
             'context' => context_module::instance($cm->id),
             'objectid' => $cm->id,
-            'other' => ['format' => $format, 'download' => $download],
+            'other' => ['format' => $format, 'download' => $download, 'expires' => $expires],
         ])->trigger();
 
         return $image;

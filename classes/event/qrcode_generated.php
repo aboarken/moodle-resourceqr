@@ -28,6 +28,7 @@ namespace local_resourceqr\event;
  *
  *     - string format: 'png' or 'svg'.
  *     - bool download: true if the image was downloaded, false for a preview.
+ *     - int expires: expiry time of the QR code, or 0 for a lifetime QR code (optional).
  * }
  */
 class qrcode_generated extends \core\event\base {
@@ -56,7 +57,10 @@ class qrcode_generated extends \core\event\base {
      */
     public function get_description() {
         $action = !empty($this->other['download']) ? 'downloaded' : 'previewed';
-        return "The user with id '$this->userid' {$action} a QR code in " . strtoupper($this->other['format']) .
+        $validity = !empty($this->other['expires'])
+            ? " valid until " . date('Y-m-d H:i', (int) $this->other['expires']) . ' UTC'
+            : '';
+        return "The user with id '$this->userid' {$action} a QR code{$validity} in " . strtoupper($this->other['format']) .
             " format for the course module with id '$this->contextinstanceid'.";
     }
 
