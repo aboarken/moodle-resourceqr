@@ -1,0 +1,14 @@
+# Who reviews changes. GitHub asks the owner for a review on every pull request that touches these
+# files. To make that review required, turn on "Require review from Code Owners" in the main
+# branch ruleset (only useful with a second maintainer: GitHub does not let an author approve
+# their own pull request).
+
+# Everything
+*                     @aboarken
+
+# What builds and publishes the package every site installs, and the plugin's security checks.
+/.github/             @aboarken
+/version.php          @aboarken
+/db/                  @aboarken
+/classes/local/access.php  @aboarken
+/classes/local/expiry.php  @aboarken
