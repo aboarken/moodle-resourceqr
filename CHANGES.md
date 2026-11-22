@@ -1,5 +1,10 @@
 # Changes
 
+## 0.1.1 (2026-11-22)
+
+- The "Generate QR code" menu icon is now a Font Awesome icon, so it takes the theme's icon colour
+  like Moodle's own menu items. Previously it was a fixed-colour image.
+
 ## 0.1.0 (2026-11-21)
 
 First release.

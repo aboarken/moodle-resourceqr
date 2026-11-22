@@ -194,7 +194,7 @@ More > Generate QR code (link to view.php?cmid=N)
 
 | Path | Purpose |
 |---|---|
-| `lib.php` | Settings navigation callback. |
+| `lib.php` | Settings navigation callback and Font Awesome icon map. |
 | `view.php` | Stand-alone page (no-JavaScript fallback). |
 | `print.php` | Print page: name, code and URL only (`embedded` layout plus print CSS). |
 | `qr.php` | Image endpoint. `cmid` (`PARAM_INT`), `format` (`PARAM_ALPHA`, `png`/`svg`), `download` (`PARAM_BOOL`). |
@@ -211,7 +211,7 @@ More > Generate QR code (link to view.php?cmid=N)
 | `amd/src/qrcode_panel.js` | Downloads with feedback, image error handling, copy link. |
 | `amd/src/print.js` | Print button and automatic printing. |
 | `templates/qrcode_panel.mustache`, `templates/print.mustache` | Markup. |
-| `db/access.php`, `db/services.php`, `db/icons.php` | Capability, web service, icon map. |
+| `db/access.php`, `db/services.php` | Capability, web service. |
 
 There is no `db/install.xml` (no tables) and no `db/upgrade.php` (nothing to upgrade).
 

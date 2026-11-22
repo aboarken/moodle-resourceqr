@@ -84,3 +84,18 @@ function local_resourceqr_extend_settings_navigation(settings_navigation $settin
         $PAGE->requires->js_call_amd('local_resourceqr/qrcode_dialogue', 'init');
     }
 }
+
+/**
+ * Font Awesome icons used by this plugin.
+ *
+ * Mapping the menu icon to a font icon makes it use the theme's icon colours,
+ * like Moodle's own menu items. Themes that do not use Font Awesome fall back
+ * to pix/qrcode.svg.
+ *
+ * @return array<string, string> Moodle icon name => Font Awesome icon.
+ */
+function local_resourceqr_get_fontawesome_icon_map(): array {
+    return [
+        'local_resourceqr:qrcode' => 'fa-qrcode',
+    ];
+}

@@ -98,6 +98,20 @@ final class navigation_test extends \advanced_testcase {
     }
 
     /**
+     * The menu icon is mapped to a Font Awesome icon, so it follows the theme's icon colour.
+     */
+    public function test_icon_is_font_icon(): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/local/resourceqr/lib.php');
+        $this->resetAfterTest();
+        $map = local_resourceqr_get_fontawesome_icon_map();
+        $this->assertSame('fa-qrcode', $map['local_resourceqr:qrcode']);
+
+        $system = \core\output\icon_system::instance(\core\output\icon_system::FONTAWESOME);
+        $this->assertStringContainsString('fa-qrcode', $system->remap_icon_name('qrcode', 'local_resourceqr'));
+    }
+
+    /**
      * No item for a disabled plugin.
      */
     public function test_disabled(): void {
