@@ -81,9 +81,10 @@ Feature: Generate QR codes for activities and resources
   Scenario: A teacher generates a QR code from the course QR codes page
     Given I am on the "Course 1" "course" page logged in as teacher1
     When I navigate to "QR codes" in current page administration
-    Then I should see "Quiz 1" in the "Quiz 1" "list_item"
-    And I should see "Page 1" in the "Page 1" "list_item"
-    And I click on "Generate QR code" "link" in the "Quiz 1" "list_item"
+    Then I should see "Quiz 1" in the "[data-region='local-resourceqr-courselist']" "css_element"
+    And I should see "Page 1" in the "[data-region='local-resourceqr-courselist']" "css_element"
+    # Each button's accessible name includes the activity name, e.g. "Generate QR code: Quiz 1".
+    And I click on "Generate QR code: Quiz 1" "link" in the "[data-region='local-resourceqr-courselist']" "css_element"
     And I should see "Scan this QR code to open this Moodle resource or activity. You may need to log in to Moodle first." in the "QR code: Quiz 1" "dialogue"
 
   Scenario: Students do not see the course QR codes page
