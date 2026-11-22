@@ -135,6 +135,22 @@ the easiest way to find QR codes, and it works for files that open or download s
 
 Without JavaScript, the menu item opens a page with the same content.
 
+### Lifetime or expiry date
+
+Under **Validity** in the dialogue, choose:
+
+- **Lifetime (never expires)** (the default): the QR code holds the activity's normal link and
+  works for as long as the activity exists.
+- **Valid until** a date: the QR code works until the end of that day (23:59 in your time zone),
+  up to 10 years ahead. The QR code, the link, the downloads and the print page all change to match,
+  and "Valid until …" is shown under the code and on the printout.
+
+A QR code with an expiry date holds a short plugin link (`/local/resourceqr/go.php?…`) instead of
+the activity's link. Until the date, it takes people straight to the activity, where Moodle's
+usual login, enrolment and access checks apply. After the date it shows "This QR code has expired".
+The link is signed, so the date can't be changed by editing it. Choose a new date and download or
+print again to give out a new QR code; QR codes already printed keep their own date.
+
 ### Downloading
 
 - **PNG:** a picture file, good for documents, slides and most printing.
@@ -203,6 +219,8 @@ More > Generate QR code (link to view.php?cmid=N)
 |---|---|
 | `lib.php` | Activity and course navigation callbacks, and the Font Awesome icon map. |
 | `view.php` | Stand-alone page (no-JavaScript fallback). |
+| `go.php` | Public link held by QR codes with an expiry date: redirects to the activity until the date, then shows that the code has expired. |
+| `classes/local/expiry.php` | Signs and checks expiring links (HMAC-SHA256 with a site secret), converts dates. |
 | `course.php` | Course "QR codes" page listing the course's activities and resources. |
 | `print.php` | Print page: name, code and URL only (`embedded` layout plus print CSS). |
 | `qr.php` | Image endpoint. `cmid` (`PARAM_INT`), `format` (`PARAM_ALPHA`, `png`/`svg`), `download` (`PARAM_BOOL`). |
@@ -348,5 +366,8 @@ npx grunt amd --root=local/resourceqr
   you want the logo in PNG files.
 - **Very small codes** (under 5 pixels per square, e.g. 200 px images of long URLs) are always drawn
   in the square design, whatever the setting, so they stay readable.
+- **Expiring QR codes can't be withdrawn one by one.** Nothing is stored per QR code, so a code
+  with an expiry date works until that date. Hiding or deleting the activity, or removing someone's
+  access, still stops them using it, as with any Moodle link.
 - Codes for **hidden or restricted** activities can be made by staff who can see them, with a
   warning. People who scan them still need access.

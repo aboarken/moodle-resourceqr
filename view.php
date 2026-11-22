@@ -31,11 +31,15 @@ require(__DIR__ . '/../../config.php');
 use local_resourceqr\local\access;
 
 $cmid = required_param('cmid', PARAM_INT);
+// Validity chosen with the form on this page when JavaScript is not available.
+$validity = optional_param('validity', 'lifetime', PARAM_ALPHA);
+$expirydate = optional_param('expirydate', '', PARAM_RAW_TRIMMED);
 
 [$course, $cm] = get_course_and_cm_from_cmid($cmid);
 require_login($course, false, $cm);
 $context = context_module::instance($cm->id);
 access::require_generate($cm);
+$expires = $validity === 'until' ? \local_resourceqr\local\expiry::date_to_timestamp($expirydate) : 0;
 
 $url = new moodle_url('/local/resourceqr/view.php', ['cmid' => $cm->id]);
 $PAGE->set_url($url);
@@ -52,6 +56,6 @@ echo $OUTPUT->header();
 echo $OUTPUT->heading($title);
 echo $OUTPUT->render_from_template(
     'local_resourceqr/qrcode_panel',
-    (new \local_resourceqr\output\qrcode_panel($cm))->export_for_template($OUTPUT)
+    (new \local_resourceqr\output\qrcode_panel($cm, $expires))->export_for_template($OUTPUT)
 );
 echo $OUTPUT->footer();

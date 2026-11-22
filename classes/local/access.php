@@ -192,6 +192,22 @@ class access {
     }
 
     /**
+     * The link a QR code encodes: the activity's normal link for a lifetime code,
+     * or a signed link that stops working after the expiry time.
+     *
+     * @param cm_info $cm
+     * @param int $expires Unix timestamp, or 0 for lifetime.
+     * @return moodle_url|null Null if the module has no view URL.
+     */
+    public static function get_qr_url(cm_info $cm, int $expires = 0): ?moodle_url {
+        $target = self::get_target_url($cm);
+        if ($target === null || $expires === 0) {
+            return $target;
+        }
+        return expiry::url($cm, $expires);
+    }
+
+    /**
      * Warnings to show when not every user will be able to open the activity.
      *
      * @param cm_info $cm

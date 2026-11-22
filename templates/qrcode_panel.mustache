@@ -29,6 +29,10 @@
     * haswarnings, warnings - Access warnings.
     * hasdownloads, downloads - Download buttons (format, label, url).
     * printurl - URL of the print page.
+    * lifetime - Whether the QR code never expires.
+    * expirydate, expirytext - Expiry date (YYYY-MM-DD) and its text, when not lifetime.
+    * defaultexpirydate, minexpirydate, maxexpirydate - Date control settings (YYYY-MM-DD).
+    * viewurl - Stand-alone page, used by the validity form without JavaScript.
 
     Example context (json):
     {
@@ -45,7 +49,14 @@
             {"format": "png", "label": "Download PNG", "url": "https://moodle.example.org/local/resourceqr/qr.php?cmid=12&format=png&download=1"},
             {"format": "svg", "label": "Download SVG", "url": "https://moodle.example.org/local/resourceqr/qr.php?cmid=12&format=svg&download=1"}
         ],
-        "printurl": "https://moodle.example.org/local/resourceqr/print.php?cmid=12&autoprint=1"
+        "printurl": "https://moodle.example.org/local/resourceqr/print.php?cmid=12&autoprint=1",
+        "lifetime": false,
+        "expirydate": "2026-12-31",
+        "expirytext": "Valid until 31 December 2026",
+        "defaultexpirydate": "2026-12-22",
+        "minexpirydate": "2026-11-22",
+        "maxexpirydate": "2036-11-22",
+        "viewurl": "https://moodle.example.org/local/resourceqr/view.php?cmid=12"
     }
 }}
 <div class="local-resourceqr-panel" data-region="local-resourceqr-panel" data-cmid="{{cmid}}" data-name="{{plainname}}">
@@ -57,8 +68,33 @@
     </div>
     {{/haswarnings}}
     <p class="local-resourceqr-name">{{{name}}}</p>
+    <form class="local-resourceqr-validity" action="{{viewurl}}" method="get" data-region="local-resourceqr-validity">
+        <input type="hidden" name="cmid" value="{{cmid}}">
+        <fieldset>
+            <legend class="local-resourceqr-validitylegend">{{#str}} validity, local_resourceqr {{/str}}</legend>
+            <div class="local-resourceqr-validityoptions">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="validity" value="lifetime" id="local-resourceqr-lifetime-{{uniqid}}-{{cmid}}"
+                        data-validity-control="lifetime" {{#lifetime}}checked{{/lifetime}}>
+                    <label class="form-check-label" for="local-resourceqr-lifetime-{{uniqid}}-{{cmid}}">{{#str}} validitylifetime, local_resourceqr {{/str}}</label>
+                </div>
+                <div class="form-check local-resourceqr-until">
+                    <input class="form-check-input" type="radio" name="validity" value="until" id="local-resourceqr-until-{{uniqid}}-{{cmid}}"
+                        data-validity-control="until" {{^lifetime}}checked{{/lifetime}}>
+                    <label class="form-check-label" for="local-resourceqr-until-{{uniqid}}-{{cmid}}">{{#str}} validityuntil, local_resourceqr {{/str}}</label>
+                    <input type="date" name="expirydate" class="form-control local-resourceqr-expirydate" data-validity-control="date"
+                        value="{{#expirydate}}{{expirydate}}{{/expirydate}}{{^expirydate}}{{defaultexpirydate}}{{/expirydate}}"
+                        min="{{minexpirydate}}" max="{{maxexpirydate}}" aria-label="{{#str}} expirydate, local_resourceqr {{/str}}">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-sm local-resourceqr-applyvalidity" data-validity-control="apply">{{#str}} apply, local_resourceqr {{/str}}</button>
+        </fieldset>
+    </form>
     <div class="local-resourceqr-preview">
         <img src="{{previewurl}}" alt="{{alt}}" width="300" height="300" class="local-resourceqr-image" data-region="local-resourceqr-image">
+        {{#expirytext}}
+        <p class="local-resourceqr-expiry" data-region="local-resourceqr-expiry">{{expirytext}}</p>
+        {{/expirytext}}
     </div>
     <p class="local-resourceqr-explanation">{{#str}} explanation, local_resourceqr {{/str}}</p>
     <div class="local-resourceqr-url">

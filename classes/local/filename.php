@@ -27,15 +27,22 @@ use cm_info;
  */
 class filename {
     /**
-     * File name for a course module's QR code, e.g. "qrcode-week_1_quiz.png".
+     * File name for a course module's QR code, e.g. "qrcode-week_1_quiz.png",
+     * or "qrcode-week_1_quiz-until-2026-12-31.png" for a QR code with an expiry date.
      *
      * @param cm_info $cm
      * @param string $format 'png' or 'svg'.
+     * @param int $expires Expiry time, or 0 for lifetime.
      * @return string
      */
-    public static function for_cm(cm_info $cm, string $format): string {
+    public static function for_cm(cm_info $cm, string $format, int $expires = 0): string {
         $name = html_entity_decode(strip_tags($cm->get_formatted_name()), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        return self::from_name($name, $format);
+        $filename = self::from_name($name, $format);
+        if ($expires > 0) {
+            $suffix = '-until-' . expiry::timestamp_to_date($expires);
+            $filename = substr($filename, 0, -strlen('.' . $format)) . $suffix . '.' . $format;
+        }
+        return $filename;
     }
 
     /**

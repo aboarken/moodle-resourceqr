@@ -35,10 +35,16 @@ ob_start();
 $cmid = required_param('cmid', PARAM_INT);
 $format = optional_param('format', 'svg', PARAM_ALPHA);
 $download = optional_param('download', 0, PARAM_BOOL);
+$expires = optional_param('expires', 0, PARAM_INT);
 
 [$course, $cm] = get_course_and_cm_from_cmid($cmid);
 require_login($course, false, $cm);
-$PAGE->set_url(new moodle_url('/local/resourceqr/qr.php', ['cmid' => $cm->id, 'format' => $format, 'download' => (int) $download]));
+$PAGE->set_url(new moodle_url('/local/resourceqr/qr.php', [
+    'cmid' => $cm->id,
+    'format' => $format,
+    'download' => (int) $download,
+    'expires' => $expires,
+]));
 
-$image = \local_resourceqr\local\image::create($cm, $format, (bool) $download);
+$image = \local_resourceqr\local\image::create($cm, $format, (bool) $download, $expires);
 $image->send((bool) $download);

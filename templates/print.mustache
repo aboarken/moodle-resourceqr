@@ -24,19 +24,24 @@
     * url - URL encoded in the QR code.
     * previewurl - URL of the SVG image.
     * alt - Alternative text for the QR code.
+    * expirytext - "Valid until ..." text, or empty for a lifetime QR code.
 
     Example context (json):
     {
         "name": "Week 1 quiz",
         "url": "https://moodle.example.org/mod/quiz/view.php?id=12",
         "previewurl": "https://moodle.example.org/local/resourceqr/qr.php?cmid=12&format=svg&download=0",
-        "alt": "QR code linking to Week 1 quiz"
+        "alt": "QR code linking to Week 1 quiz",
+        "expirytext": "Valid until 31 December 2026"
     }
 }}
 <div class="local-resourceqr-print" data-region="local-resourceqr-print">
     <h1 class="local-resourceqr-print-name">{{{name}}}</h1>
     <img src="{{previewurl}}" alt="{{alt}}" class="local-resourceqr-print-image" width="600" height="600" data-region="local-resourceqr-image">
     <p class="local-resourceqr-print-url" dir="ltr">{{url}}</p>
+    {{#expirytext}}
+    <p class="local-resourceqr-print-expiry">{{expirytext}}</p>
+    {{/expirytext}}
     <div class="local-resourceqr-print-controls d-print-none">
         <button type="button" class="btn btn-primary" data-action="local-resourceqr-printnow">{{#str}} print, local_resourceqr {{/str}}</button>
     </div>
