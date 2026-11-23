@@ -362,4 +362,103 @@ final class qr_generator_test extends \advanced_testcase {
         $this->assertContains($backend, ['gd', 'imagick', null]);
         $this->assertSame($backend !== null, qr_generator::png_supported());
     }
+
+    /**
+     * Skip unless the Imagick extension can write PNG files.
+     */
+    private function require_imagick(): void {
+        if (!class_exists(\Imagick::class) || !\Imagick::queryFormats('PNG')) {
+            $this->markTestSkipped('The Imagick extension is not available.');
+        }
+    }
+
+    /**
+     * PNG from the Imagick back end, which is used only when GD is missing.
+     *
+     * @param qr_generator $generator
+     * @return string
+     */
+    private function png_imagick(qr_generator $generator): string {
+        return (new \ReflectionMethod($generator, 'png_imagick'))->invoke($generator);
+    }
+
+    /**
+     * The Imagick back end draws every design, with and without the logo, and the result decodes.
+     *
+     * @dataProvider style_provider
+     * @param string $style
+     * @param int $size
+     * @param bool $logo
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('style_provider')]
+    public function test_imagick_styles_decode(string $style, int $size, bool $logo): void {
+        $this->require_imagick();
+        $this->resetAfterTest();
+        $file = null;
+        if ($logo) {
+            $this->create_site_logo();
+            $file = qr_generator::get_site_logo();
+        }
+        $png = $this->png_imagick(new qr_generator(self::URL, 'M', $size, $file, $style, '#1d2125'));
+        $info = getimagesizefromstring($png);
+        $this->assertSame('image/png', $info['mime']);
+        $this->assertSame($size, $info[0]);
+        $this->assertSame(self::URL, $this->decode_png($png));
+    }
+
+    /**
+     * An SVG site logo is never passed to ImageMagick (whose SVG reader can fetch external
+     * files): the logo area stays blank and the code still decodes.
+     */
+    public function test_imagick_ignores_svg_logo(): void {
+        $this->require_imagick();
+        $this->resetAfterTest();
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="10" height="10">' .
+            '<image xlink:href="http://127.0.0.1:9/never-fetched.png" width="10" height="10"/></svg>';
+        get_file_storage()->create_file_from_string([
+            'contextid' => \context_system::instance()->id,
+            'component' => 'core_admin',
+            'filearea' => 'logocompact',
+            'itemid' => 0,
+            'filepath' => '/',
+            'filename' => 'logo.svg',
+        ], $svg);
+        set_config('logocompact', '/logo.svg', 'core_admin');
+        $file = qr_generator::get_site_logo();
+        $this->assertSame('image/svg+xml', $file->get_mimetype());
+
+        $generator = new qr_generator(self::URL, 'M', 600, $file);
+        $png = $this->png_imagick($generator);
+        $this->assertSame(self::URL, $this->decode_png($png));
+        // The SVG output still embeds the logo (browsers draw <image> content without scripts or loading).
+        $this->assertStringContainsString('href="data:image/svg+xml;base64,', $generator->svg());
+    }
+
+    /**
+     * The SVG output of every design decodes once rasterised (by ImageMagick, when it can read SVG).
+     *
+     * @dataProvider style_provider
+     * @param string $style
+     * @param int $size
+     * @param bool $logo
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('style_provider')]
+    public function test_svg_styles_decode(string $style, int $size, bool $logo): void {
+        $this->require_imagick();
+        if (!\Imagick::queryFormats('SVG') && !\Imagick::queryFormats('MSVG')) {
+            $this->markTestSkipped('ImageMagick cannot read SVG on this system.');
+        }
+        $this->resetAfterTest();
+        $file = null;
+        if ($logo) {
+            $this->create_site_logo();
+            $file = qr_generator::get_site_logo();
+        }
+        $svg = (new qr_generator(self::URL, 'M', $size, $file, $style, '#1d2125'))->svg();
+        $image = new \Imagick();
+        $image->setBackgroundColor(new \ImagickPixel('#ffffff'));
+        $image->readImageBlob($svg);
+        $image->setImageFormat('png');
+        $this->assertSame(self::URL, $this->decode_png($image->getImageBlob()));
+    }
 }

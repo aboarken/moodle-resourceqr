@@ -403,6 +403,16 @@ class qr_generator {
     }
 
     /**
+     * Design actually drawn: very small modules are always square, because curves blur at a few pixels.
+     *
+     * @param array $layout From layout().
+     * @return string One of STYLES.
+     */
+    private function module_style(array $layout): string {
+        return $layout['module'] < self::MIN_CURVED_MODULE ? self::STYLE_SQUARE : $this->style;
+    }
+
+    /**
      * The shapes to paint, in order, in module units with (0, 0) at the outer edge of the quiet zone.
      *
      * Each shape is one of:
@@ -418,8 +428,7 @@ class qr_generator {
         $matrix = $this->get_matrix();
         $n = $layout['n'];
         $q = self::QUIET_ZONE;
-        // Curves blur when modules are only a few pixels wide, so very small codes are drawn square.
-        $modulestyle = $layout['module'] < self::MIN_CURVED_MODULE ? self::STYLE_SQUARE : $this->style;
+        $modulestyle = $this->module_style($layout);
         $fancy = $modulestyle !== self::STYLE_SQUARE;
         $dark = function (int $x, int $y) use ($matrix, $n, $layout, $fancy): bool {
             if ($x < 0 || $y < 0 || $x >= $n || $y >= $n || !$matrix[$y][$x]) {
@@ -581,7 +590,7 @@ class qr_generator {
             $elements[] = '<path fill="' . $colours[$current] . '" d="' . $d . '"/>';
         }
 
-        $rendering = $this->style === self::STYLE_SQUARE ? 'crispEdges' : 'geometricPrecision';
+        $rendering = $this->module_style($layout) === self::STYLE_SQUARE ? 'crispEdges' : 'geometricPrecision';
         $svg = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $svg .= '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="' . $size . '" height="' . $size .
             '" viewBox="0 0 ' . $size . ' ' . $size . '" shape-rendering="' . $rendering . '">';
@@ -706,6 +715,15 @@ class qr_generator {
     /**
      * PNG using Imagick (used only when GD is not available).
      *
+     * All shapes go into one ImagickDraw and are painted in a single pass: painting
+     * each shape separately costs a full pass over the image per module.
+     *
+     * ImageMagick puts pixel centres on whole coordinates, while the shapes use pixel
+     * edges (as SVG and GD do), so the drawing is shifted by half a pixel. Shapes have no
+     * stroke: an invisible stroke (opacity 0) still clips the fill in ImageMagick 6, which
+     * left white lines between rows that stopped codes from scanning. The square design is
+     * drawn without anti-aliasing so its edges stay sharp, as with GD.
+     *
      * @return string
      */
     private function png_imagick(): string {
@@ -714,46 +732,50 @@ class qr_generator {
         $o = $layout['origin'];
         $image = new \Imagick();
         $image->newImage($layout['size'], $layout['size'], new \ImagickPixel('#ffffff'));
+        $image->setAntiAlias($this->module_style($layout) !== self::STYLE_SQUARE);
         $colours = ['fg' => new \ImagickPixel($this->colour), 'bg' => new \ImagickPixel('#ffffff')];
+        $draw = new \ImagickDraw();
+        $draw->setStrokeColor(new \ImagickPixel('none'));
+        $draw->translate(-0.5, -0.5);
         foreach ($this->shapes($layout) as $shape) {
-            $draw = new \ImagickDraw();
-            $draw->setStrokeOpacity(0);
             if ($shape[0] === 'circle') {
                 [, $cx, $cy, $radius, $fill] = $shape;
                 $draw->setFillColor($colours[$fill]);
                 $draw->circle($o + $cx * $m, $o + $cy * $m, $o + $cx * $m + $radius * $m, $o + $cy * $m);
-            } else {
-                [, $x, $y, $w, $h, $radii, $fill] = $shape;
-                $draw->setFillColor($colours[$fill]);
-                [$tl, $tr, $br, $bl] = array_map(fn($r) => $r * $m, $radii);
-                $x1 = $o + $x * $m;
-                $y1 = $o + $y * $m;
-                $x2 = $x1 + $w * $m;
-                $y2 = $y1 + $h * $m;
-                $draw->pathStart();
-                $draw->pathMoveToAbsolute($x1 + $tl, $y1);
-                $draw->pathLineToAbsolute($x2 - $tr, $y1);
-                if ($tr > 0) {
-                    $draw->pathEllipticArcAbsolute($tr, $tr, 0, false, true, $x2, $y1 + $tr);
-                }
-                $draw->pathLineToAbsolute($x2, $y2 - $br);
-                if ($br > 0) {
-                    $draw->pathEllipticArcAbsolute($br, $br, 0, false, true, $x2 - $br, $y2);
-                }
-                $draw->pathLineToAbsolute($x1 + $bl, $y2);
-                if ($bl > 0) {
-                    $draw->pathEllipticArcAbsolute($bl, $bl, 0, false, true, $x1, $y2 - $bl);
-                }
-                $draw->pathLineToAbsolute($x1, $y1 + $tl);
-                if ($tl > 0) {
-                    $draw->pathEllipticArcAbsolute($tl, $tl, 0, false, true, $x1 + $tl, $y1);
-                }
-                $draw->pathClose();
-                $draw->pathFinish();
+                continue;
             }
-            $image->drawImage($draw);
+            [, $x, $y, $w, $h, $radii, $fill] = $shape;
+            $draw->setFillColor($colours[$fill]);
+            [$tl, $tr, $br, $bl] = array_map(fn($r) => $r * $m, $radii);
+            $x1 = $o + $x * $m;
+            $y1 = $o + $y * $m;
+            $x2 = $x1 + $w * $m;
+            $y2 = $y1 + $h * $m;
+            $draw->pathStart();
+            $draw->pathMoveToAbsolute($x1 + $tl, $y1);
+            $draw->pathLineToAbsolute($x2 - $tr, $y1);
+            if ($tr > 0) {
+                $draw->pathEllipticArcAbsolute($tr, $tr, 0, false, true, $x2, $y1 + $tr);
+            }
+            $draw->pathLineToAbsolute($x2, $y2 - $br);
+            if ($br > 0) {
+                $draw->pathEllipticArcAbsolute($br, $br, 0, false, true, $x2 - $br, $y2);
+            }
+            $draw->pathLineToAbsolute($x1 + $bl, $y2);
+            if ($bl > 0) {
+                $draw->pathEllipticArcAbsolute($bl, $bl, 0, false, true, $x1, $y2 - $bl);
+            }
+            $draw->pathLineToAbsolute($x1, $y1 + $tl);
+            if ($tl > 0) {
+                $draw->pathEllipticArcAbsolute($tl, $tl, 0, false, true, $x1 + $tl, $y1);
+            }
+            $draw->pathClose();
+            $draw->pathFinish();
         }
-        if ($layout['logo'] && $this->logo) {
+        $image->drawImage($draw);
+        // Raster logos only, as with GD: SVG logos are not passed to ImageMagick's SVG
+        // reader, which can fetch external resources. The logo area is left blank instead.
+        if ($layout['logo'] && $this->logo && $this->logo->get_mimetype() !== 'image/svg+xml') {
             try {
                 $logo = new \Imagick();
                 $logo->setBackgroundColor(new \ImagickPixel('transparent'));
@@ -762,7 +784,7 @@ class qr_generator {
                 $logo->resizeImage($w, $h, \Imagick::FILTER_LANCZOS, 1);
                 $image->compositeImage($logo, \Imagick::COMPOSITE_OVER, $x, $y);
             } catch (\ImagickException $e) {
-                // The logo cannot be read (for example SVG without a delegate): leave the area blank.
+                // The logo cannot be read: leave the area blank.
                 debugging('local_resourceqr: could not read site logo: ' . $e->getMessage(), DEBUG_DEVELOPER);
             }
         }

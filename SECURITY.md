@@ -28,5 +28,8 @@ security advisory with credit to the reporter, unless you prefer otherwise.
   name or link without access to it, is in scope.
 - Forging or extending an expiry link (`go.php`) without the site secret is in scope. The link
   only redirects; Moodle still checks access to the activity itself.
+- Not a vulnerability: someone who scanned an expiring QR code before its date knows the
+  activity's normal address afterwards. An expiry date limits the QR code, not access to the
+  activity; Moodle's own access rules decide who can open it.
 - Moodle itself and the bundled TCPDF library are out of scope; report those to their own
   projects.

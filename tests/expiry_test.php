@@ -140,6 +140,41 @@ final class expiry_test extends \advanced_testcase {
     }
 
     /**
+     * The signing key exists after install, is 256 random bits, and checking a link never creates one.
+     */
+    public function test_secret_lifecycle(): void {
+        $cmid = (int) $this->page->cmid;
+        $expires = time() + DAYSECS;
+        // Created on install.
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', (string) get_config('local_resourceqr', 'secret'));
+
+        // Without a key, links are rejected and nothing is written.
+        unset_config('secret', 'local_resourceqr');
+        $this->assertFalse(expiry::verify($cmid, $expires, str_repeat('a', 20)));
+        $this->assertSame([expiry::INVALID, null], expiry::resolve($cmid, $expires, str_repeat('a', 20)));
+        $this->assertFalse(get_config('local_resourceqr', 'secret'));
+
+        // The ensure_secret() method creates one and keeps an existing one.
+        expiry::ensure_secret();
+        $secret = get_config('local_resourceqr', 'secret');
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $secret);
+        expiry::ensure_secret();
+        $this->assertSame($secret, get_config('local_resourceqr', 'secret'));
+
+        // Signing creates a key if it is missing (for example deleted by hand).
+        unset_config('secret', 'local_resourceqr');
+        $signature = expiry::sign($cmid, $expires);
+        $this->assertTrue(expiry::verify($cmid, $expires, $signature));
+
+        // Signatures of the wrong length or case are rejected.
+        $this->assertFalse(expiry::verify($cmid, $expires, substr($signature, 0, 19)));
+        $this->assertFalse(expiry::verify($cmid, $expires, $signature . '0'));
+        if ($signature !== strtoupper($signature)) {
+            $this->assertFalse(expiry::verify($cmid, $expires, strtoupper($signature)));
+        }
+    }
+
+    /**
      * Cancelling all expiring QR codes: old links stop working, new ones work, lifetime links are unchanged.
      */
     public function test_reset_secret(): void {
@@ -171,6 +206,8 @@ final class expiry_test extends \advanced_testcase {
      * A dated QR code image encodes the signed link and is logged with its expiry.
      */
     public function test_image_with_expiry(): void {
+        // A server time zone far from UTC: the log description must still show UTC.
+        $this->setTimezone('Pacific/Auckland', 'Pacific/Auckland');
         $expires = time() + 10 * DAYSECS;
         $sink = $this->redirectEvents();
         $image = image::create($this->cm(), 'svg', true, $expires);
@@ -180,7 +217,10 @@ final class expiry_test extends \advanced_testcase {
         $this->assertStringContainsString('go.php?id=' . $this->page->cmid . '&amp;exp=' . $expires, $image->content);
         $this->assertStringEndsWith('-until-' . expiry::timestamp_to_date($expires) . '.svg', $image->filename);
         $this->assertSame($expires, reset($events)->other['expires']);
-        $this->assertStringContainsString('valid until', reset($events)->get_description());
+        $this->assertStringContainsString(
+            'valid until ' . gmdate('Y-m-d H:i', $expires) . ' UTC',
+            reset($events)->get_description()
+        );
 
         if (qr_generator::png_supported() && is_executable('/usr/bin/zbarimg')) {
             $file = make_request_directory() . '/qr.png';

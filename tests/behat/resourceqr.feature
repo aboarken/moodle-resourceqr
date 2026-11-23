@@ -97,6 +97,22 @@ Feature: Generate QR codes for activities and resources
     Then I should see "##+30 days##%d %B %Y##" in the "[data-region='local-resourceqr-expiry']" "css_element"
     And "input.local-resourceqr-urlinput[value*='/local/resourceqr/go.php?id=']" "css_element" should exist
 
+  Scenario: Scanning a QR code with an expiry date opens the activity until it expires
+    Given I log in as "student1"
+    When I open the QR code link of the activity "page1" with expiry "valid"
+    Then I should see "Page 1"
+    And I should not see "QR code not valid"
+    And I open the QR code link of the activity "page1" with expiry "expired"
+    And I should see "QR code expired"
+    And I should see "Ask the person who shared it for a new one."
+    And I open the QR code link of the activity "page1" with expiry "forged"
+    And I should see "QR code not valid"
+
+  Scenario: Scanning a QR code with an expiry date when logged out leads to the login page
+    When I open the QR code link of the activity "page1" with expiry "valid"
+    Then I should see "Log in"
+    And I should not see "QR code not valid"
+
   Scenario: An administrator cancels all expiring QR codes
     Given I log in as "admin"
     And I navigate to "Plugins > Local plugins > Resource QR Code" in site administration

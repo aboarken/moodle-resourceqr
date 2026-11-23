@@ -1,5 +1,24 @@
 # Changes
 
+## 0.2.2 (2026-11-25)
+
+Fixes from a full code and security audit (see docs/AUDIT.md). No change to how the plugin is used.
+
+- **Signing key:** created on install, and on upgrade for sites that don't have one yet, so
+  checking an expiring link (which anyone can do) never writes to the database and two first
+  requests can't create two different keys. New keys are 256 random bits. Existing keys are kept,
+  so QR codes already given out keep working.
+- **Imagick:** SVG site logos are no longer passed to ImageMagick (whose SVG reader can load
+  external files), as was already the case with GD. PNG files from Imagick are drawn in one pass
+  instead of one pass per square, which is much faster.
+- **Logs:** the event description gave the expiry time in the server's time zone but labelled it
+  UTC; it is now really UTC.
+- The *Print* link opens with `rel="noopener"`.
+- Tests: the Imagick back end and the SVG output of every design are now decoded in the tests
+  (CI installs Imagick); the public expiring link is tested in a browser (valid, expired, forged,
+  logged out); the signing key's lifecycle is tested.
+- Documentation: security model, what an expiry date does and doesn't do, the audit report.
+
 ## 0.2.1 (2026-11-24)
 
 - **Cancel all expiring QR codes:** a new button at the bottom of the plugin settings (site

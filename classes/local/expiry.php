@@ -55,28 +55,54 @@ class expiry {
     public const INVALID = 'invalid';
 
     /**
-     * The site secret used to sign links. Created on first use.
+     * A new random signing key: 256 bits from the operating system's CSPRNG, as hexadecimal.
      *
      * @return string
      */
-    private static function secret(): string {
+    private static function new_secret(): string {
+        return bin2hex(random_bytes(32));
+    }
+
+    /**
+     * Create the signing key if the site does not have one yet.
+     *
+     * Called on install and upgrade, so the key normally exists before any link is
+     * signed or checked. Does nothing if a key exists.
+     */
+    public static function ensure_secret(): void {
+        if ((string) get_config('local_resourceqr', 'secret') === '') {
+            set_config('secret', self::new_secret(), 'local_resourceqr');
+        }
+    }
+
+    /**
+     * The site's signing key.
+     *
+     * @param bool $create Create it if missing. Only signing creates it: checking a link
+     *     (which anyone can do through go.php) never writes to the database.
+     * @return string|null Null if there is no key and $create is false.
+     */
+    private static function secret(bool $create): ?string {
         $secret = (string) get_config('local_resourceqr', 'secret');
         if ($secret === '') {
-            $secret = random_string(64);
-            set_config('secret', $secret, 'local_resourceqr');
+            if (!$create) {
+                return null;
+            }
+            self::ensure_secret();
+            $secret = (string) get_config('local_resourceqr', 'secret');
         }
         return $secret;
     }
 
     /**
-     * Cancel every QR code with an expiry date by replacing the site secret.
+     * Cancel every QR code with an expiry date by replacing the site's signing key.
      *
-     * Links signed with the old secret show "QR code not valid" from now on. Lifetime QR
+     * Links signed with the old key show "QR code not valid" from now on. Lifetime QR
      * codes hold the activity's own link and are not affected. The change is recorded in
-     * the configuration changes report, without the secret itself.
+     * the configuration changes report, without the key itself.
      */
     public static function reset_secret(): void {
-        set_config('secret', random_string(64), 'local_resourceqr');
+        set_config('secret', self::new_secret(), 'local_resourceqr');
         set_config('secretreset', time(), 'local_resourceqr');
         add_to_config_log('secret', '', get_string('resetlinks_logvalue', 'local_resourceqr'), 'local_resourceqr');
     }
@@ -98,7 +124,19 @@ class expiry {
      * @return string
      */
     public static function sign(int $cmid, int $expires): string {
-        $hash = hash_hmac('sha256', 'local_resourceqr:' . $cmid . ':' . $expires, self::secret());
+        return self::hmac($cmid, $expires, self::secret(true));
+    }
+
+    /**
+     * HMAC-SHA256 of the course module id and expiry time, truncated to SIGNATURE_LENGTH.
+     *
+     * @param int $cmid
+     * @param int $expires
+     * @param string $secret
+     * @return string
+     */
+    private static function hmac(int $cmid, int $expires, string $secret): string {
+        $hash = hash_hmac('sha256', 'local_resourceqr:' . $cmid . ':' . $expires, $secret);
         return substr($hash, 0, self::SIGNATURE_LENGTH);
     }
 
@@ -111,7 +149,11 @@ class expiry {
      * @return bool
      */
     public static function verify(int $cmid, int $expires, string $signature): bool {
-        return $signature !== '' && hash_equals(self::sign($cmid, $expires), $signature);
+        $secret = self::secret(false);
+        if ($secret === null || strlen($signature) !== self::SIGNATURE_LENGTH) {
+            return false;
+        }
+        return hash_equals(self::hmac($cmid, $expires, $secret), $signature);
     }
 
     /**

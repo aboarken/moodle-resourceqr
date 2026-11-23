@@ -58,7 +58,7 @@ class qrcode_generated extends \core\event\base {
     public function get_description() {
         $action = !empty($this->other['download']) ? 'downloaded' : 'previewed';
         $validity = !empty($this->other['expires'])
-            ? " valid until " . date('Y-m-d H:i', (int) $this->other['expires']) . ' UTC'
+            ? ' valid until ' . gmdate('Y-m-d H:i', (int) $this->other['expires']) . ' UTC'
             : '';
         return "The user with id '$this->userid' {$action} a QR code{$validity} in " . strtoupper($this->other['format']) .
             " format for the course module with id '$this->contextinstanceid'.";
