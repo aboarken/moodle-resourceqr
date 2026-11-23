@@ -165,6 +165,12 @@ usual login, enrolment and access checks apply. After the date it shows "This QR
 The link is signed, so the date can't be changed by editing it. Choose a new date and download or
 print again to give out a new QR code; QR codes already printed keep their own date.
 
+**An expiry date limits the QR code, not access to the activity.** Someone who scanned the code
+before the date ends up on the activity's normal page, and can bookmark or share that address like
+any Moodle link. Who can open the activity is still decided by Moodle: enrolment, visibility, access
+restrictions and permissions. Use those to control access; use an expiry date to stop a printed or
+shared QR code from leading anywhere after an event.
+
 ### Downloading
 
 - **PNG:** a picture file, good for documents, slides and most printing.
@@ -235,7 +241,6 @@ More > Generate QR code (link to view.php?cmid=N)
 | `view.php` | Stand-alone page (no-JavaScript fallback). |
 | `go.php` | Public link held by QR codes with an expiry date: redirects to the activity until the date, then shows that the code has expired. |
 | `classes/local/expiry.php` | Signs and checks expiring links (HMAC-SHA256 with a site secret), converts dates, replaces the secret to cancel them. |
-| `resetlinks.php` | Confirmation page for *Cancel all expiring QR codes* (`moodle/site:config`, POST with sesskey). |
 | `course.php` | Course "QR codes" page listing the course's activities and resources. |
 | `print.php` | Print page: name, code and URL only (`embedded` layout plus print CSS). |
 | `qr.php` | Image endpoint. `cmid` (`PARAM_INT`), `format` (`PARAM_ALPHA`, `png`/`svg`), `download` (`PARAM_BOOL`). |
@@ -254,7 +259,11 @@ More > Generate QR code (link to view.php?cmid=N)
 | `templates/qrcode_panel.mustache`, `templates/print.mustache` | Markup. |
 | `db/access.php`, `db/services.php` | Capability, web service. |
 
-There is no `db/install.xml` (no tables) and no `db/upgrade.php` (nothing to upgrade).
+| `db/install.php`, `db/upgrade.php` | Create the key that signs QR codes with an expiry date (install, and upgrade from 0.2.1 or earlier; an existing key is kept). |
+| `resetlinks.php` | Confirmation page for *Cancel all expiring QR codes*. |
+| `tests/behat/behat_local_resourceqr.php` | Behat step that opens a valid, expired or forged expiring link. |
+
+There is no `db/install.xml`: the plugin has no tables and stores nothing per QR code.
 
 ### Access rule (every entry point)
 
@@ -265,6 +274,15 @@ There is no `db/install.xml` (no tables) and no `db/upgrade.php` (nothing to upg
    - the plugin to be enabled, and the activity type to be enabled and have a view page,
    - `require_capability('local/resourceqr:generate', $modulecontext)`,
    - `$cm->uservisible`, or `moodle/course:viewhiddenactivities` in the activity.
+
+The other entry points:
+
+- `course.php` (course *QR codes* page): `require_login($course)`, the plugin enabled, and
+  `local/resourceqr:generate` in the course; each activity listed must then pass
+  `access::can_generate()` itself.
+- `go.php` (expiring links): public, see *Security model* below.
+- `resetlinks.php`: `admin_externalpage_setup()` (`moodle/site:config`), and the change itself
+  needs a POST with `sesskey`.
 
 `cmid` is never trusted on its own: the course and activity come from
 `get_course_and_cm_from_cmid()` for the current user, then go through the checks above. Image
@@ -322,36 +340,46 @@ npx grunt amd --root=local/resourceqr
   - disabled plugin and disabled module types;
   - URL resolution for 16 module types, and modules without a view page;
   - the QR renderer, including decoding PNG and SVG output with `zbarimg` (skipped if it isn't
-    installed), every design, every error-correction level, and the logo;
+    installed), every design, every error-correction level, and the logo, with GD and with Imagick
+    (skipped if the Imagick extension isn't installed), and an SVG logo never reaching ImageMagick;
+  - expiring links: signing, dates, resolution, the signing key's lifecycle (created on install,
+    never created by checking a link) and cancelling all expiring QR codes;
   - settings validation, the event, the external function, navigation, file names and privacy.
 - `tests/behat/resourceqr.feature`: the action for authorised and unauthorised users; the dialogue
-  (name, QR, URL, copy, downloads, print); hidden warning; format restriction; disabled plugin; no-JavaScript page; Classic theme; mobile viewport.
+  (name, QR, URL, copy, downloads, print); hidden warning; format restriction; disabled plugin;
+  no-JavaScript page; Classic theme; mobile viewport; course QR codes page; making a QR code with an
+  expiry date; opening a valid, expired and forged expiring link, logged in and logged out (step in
+  `tests/behat/behat_local_resourceqr.php`); cancelling all expiring QR codes.
 - `.github/workflows/ci.yml`: moodle-plugin-ci on Moodle 4.5, 5.0, 5.1, 5.2 and 5.3 (PHP 8.3, plus
   8.4 on 5.3) with PostgreSQL 17. It runs phplint, phpcs (moodle-cs), phpdoc, validate, savepoints,
-  mustache, grunt, PHPUnit and Behat, and installs `zbar-tools` for the decoding tests.
+  mustache, grunt, PHPUnit and Behat, and installs `zbar-tools` and the Imagick extension for the
+  decoding tests.
 
-### What was actually run during development
+### What was actually run
+
+Latest audit (0.2.2, see [docs/AUDIT.md](docs/AUDIT.md)):
 
 | Check | Result |
 |---|---|
-| PHPUnit, Moodle 4.5.16, PHP 8.3, PostgreSQL 16 | 101 tests pass |
-| PHPUnit, Moodle 5.2.5, PHP 8.3, PostgreSQL 16 (PHPUnit 11) | 101 tests pass, no deprecations |
-| phpcs `moodle-extra` (moodlehq/moodle-cs) | No errors or warnings |
-| Grunt `amd` (ESLint + build), `stylelint`, `gherkinlint` with Moodle 4.5's tooling | Pass |
+| PHPUnit, Moodle 4.5.16+, PHP 8.3.6, PostgreSQL 16, GD **and** Imagick (ImageMagick 6.9.12), zbarimg | 155 tests, 732 assertions, all pass |
+| Upgrade 0.2.1 → 0.2.2 on a real 4.5 site (CLI `upgrade.php`) | Site without a key gets a new 256-bit key; site with a key keeps it |
+| `go.php` over HTTP (PHP built-in server) | Valid link: 303 to the activity. Expired: "QR code expired". Forged or junk parameters: "QR code not valid", nothing reflected. No key in the database: refused, and no key created |
+| phpcs `moodle-extra` (moodlehq/moodle-cs) on every PHP file | No errors or warnings |
+| CI (moodle-plugin-ci: lint, phpcs, phpdoc, validate, savepoints, mustache, grunt, PHPUnit, Behat), run [45184107617](https://github.com/aboarken/moodle-resourceqr/actions/runs/45184107617) | All six jobs pass: Moodle 4.5, 5.0, 5.1, 5.2, 5.3 with PHP 8.3, and 5.3 with PHP 8.4. On 4.5: PHPUnit 155 tests, 732 assertions, none skipped (Imagick included); Behat 17 scenarios pass (5.3: 16 pass, the Classic-theme one is skipped because 5.3 has no Classic) |
+
+Earlier development checks:
+
+| Check | Result |
+|---|---|
 | Browser check on a real 4.5.16 site (Playwright/Chromium) | Boost, Classic and a 390 px phone screen: menu item, dialogue, preview, PNG/SVG downloads (files decode), copy link toast, Escape closes and returns focus to the More menu, hidden-activity warning, print page, a user without the capability sees no item and gets "no permission" on every page |
 | Decoding of 144 generated images (3 designs × with/without logo × levels L/M/Q/H × 200/600/2000 px, PNG and Chromium-rendered SVG) with zbarimg | All decode to the right URL |
+| Grunt `amd` (ESLint + build), `stylelint`, `gherkinlint` with Moodle 4.5's tooling | Pass |
 
-**Not run locally:**
+**Not run locally** (they run in CI):
 
-- **Moodle 5.3 PHPUnit:** 5.3 requires PostgreSQL 17 (or MariaDB 11.4 / MySQL 8.4), which wasn't
-  available in the build environment. The 5.3.1 source was checked for every API the plugin uses.
-  The CI workflow runs the suite on 5.3.
-- **Behat:** no Selenium/ChromeDriver was available. The CI workflow runs it. The same flows were
-  checked by hand-written Playwright scripts on 4.5, as listed above.
-- **Imagick back end:** the build environment only had GD. The Imagick code is used only when GD is
-  missing.
-- **moodle-plugin-ci's `phpdoc`, `validate`, `savepoints` and `mustache` commands** were not run
-  locally. They run in CI.
+- **PHPUnit on Moodle 5.x:** 5.3 needs PostgreSQL 17, and only 16 was available here. The 5.3.1
+  source was checked for every API the plugin uses.
+- **Behat:** no Selenium/ChromeDriver here.
 
 ### Still to check on your own site
 
@@ -367,7 +395,36 @@ To report a security problem, see [SECURITY.md](SECURITY.md) (privately, through
 permissions except for the release step, its actions are pinned to exact commits and kept up to
 date by Dependabot (`.github/dependabot.yml`), and changes to the workflow and the plugin's access
 checks are reviewed by the code owner (`.github/CODEOWNERS`). The workflow does not keep its
-GitHub token in the checked-out files.
+GitHub token in the checked-out files. The last full audit, its findings and what was changed are in
+[docs/AUDIT.md](docs/AUDIT.md).
+
+### Security model
+
+- **Who can make QR codes:** users with `local/resourceqr:generate` in the activity who can also
+  see it (`$cm->uservisible`, or `moodle/course:viewhiddenactivities`). Every page and the web
+  service check this for the activity in the request, after `require_login()`; an id in a URL never
+  grants anything by itself.
+- **What a QR code holds:** only the activity's own address (lifetime), or a signed `go.php` link
+  (expiry date). No user, session or token data is ever encoded.
+- **`go.php` is public on purpose,** because QR codes are scanned by people who aren't logged in
+  yet. It does nothing unless the link carries a valid signature: an HMAC-SHA256 of the activity id
+  and expiry time with the site's signing key, truncated to 80 bits and compared in constant time.
+  It only ever redirects to the activity's own page on this site, where Moodle's access checks
+  apply, so it can't be used to reach anything else or to redirect elsewhere. Checking a link never
+  writes to the database.
+- **The signing key** is 256 random bits, created on install (or on upgrade), and stored as
+  `local_resourceqr/secret` in the site configuration (`config_plugins` table). It is never shown
+  in the interface. Anyone who can read the database can make valid expiring links, so protect
+  database backups as usual. A copy of the site (for example a test site restored from a backup)
+  has the same key: its expiring links also work there. *Cancel all expiring QR codes* replaces the
+  key on that site only.
+- **Images** are generated on request and never stored. SVG files are sent with
+  `Content-Security-Policy: default-src 'none'; sandbox` and `X-Content-Type-Options: nosniff`, and
+  hold no script. SVG site logos are embedded in SVG codes only and are never passed to an image
+  library.
+- **Logs:** each preview, download and print is logged (`\local_resourceqr\event\qrcode_generated`),
+  with the activity, format and expiry. Scanning a code is not logged by the plugin; Moodle logs the
+  activity view as usual.
 
 ## Known limitations
 
@@ -385,13 +442,15 @@ GitHub token in the checked-out files.
   encodes and reports a clean error if the encoder still misbehaves. Other QR codes generated by
   Moodle core on such a server may be affected independently of this plugin.
 - **PNG needs GD or Imagick.** Without either, only SVG is offered and administrators see a notice.
-- **SVG logos in PNG files:** GD can't read SVG. If your logo is an SVG, PNG codes are made without
-  it (the centre stays blank, which still scans). SVG codes include it. Upload a PNG compact logo if
-  you want the logo in PNG files.
+- **SVG logos in PNG files:** SVG logos are never passed to GD or Imagick (GD can't read them, and
+  ImageMagick's SVG reader can load external files). If your logo is an SVG, PNG codes are made
+  without it (the centre stays blank, which still scans). SVG codes include it. Upload a PNG compact
+  logo if you want the logo in PNG files.
 - **Very small codes** (under 5 pixels per square, e.g. 200 px images of long URLs) are always drawn
   in the square design, whatever the setting, so they stay readable.
 - **Expiring QR codes can't be withdrawn one by one.** Nothing is stored per QR code, so a code
-  with an expiry date works until that date. Hiding or deleting the activity, or removing someone's
-  access, still stops them using it, as with any Moodle link.
+  with an expiry date works until that date, unless an administrator uses *Cancel all expiring QR
+  codes* (which stops all of them on the site). Hiding or deleting the activity, or removing
+  someone's access, still stops them using it, as with any Moodle link.
 - Codes for **hidden or restricted** activities can be made by staff who can see them, with a
   warning. People who scan them still need access.

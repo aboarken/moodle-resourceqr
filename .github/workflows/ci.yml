@@ -61,7 +61,8 @@ jobs:
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
-          extensions: gd, zip, intl, soap, xmlrpc
+          # imagick: so the Imagick PNG back end (used when GD is missing) is tested too.
+          extensions: gd, imagick, zip, intl, soap, xmlrpc
           ini-values: max_input_vars=5000
           coverage: none
 

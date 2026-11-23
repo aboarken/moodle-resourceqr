@@ -58,10 +58,11 @@ class course_list implements \renderable, \templatable {
                     continue;
                 }
                 $warnings = array_map(fn(string $message) => ['message' => $message], access::get_warnings($cm));
+                $name = $cm->get_formatted_name();
                 $items[] = [
                     'cmid' => (int) $cm->id,
-                    'name' => $cm->get_formatted_name(),
-                    'plainname' => html_entity_decode(strip_tags($cm->get_formatted_name()), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                    'name' => $name,
+                    'plainname' => html_entity_decode(strip_tags($name), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                     'modname' => (string) $cm->get_module_type_name(),
                     'iconurl' => $cm->get_icon_url()->out(false),
                     'url' => (new moodle_url('/local/resourceqr/view.php', ['cmid' => $cm->id]))->out(false),
