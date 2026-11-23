@@ -273,11 +273,11 @@ No files were removed.
 | Imagick timing | before/after, 600 and 2000 px | See section 6 |
 | moodle-cs `moodle-extra` | every PHP file | 0 errors, 0 warnings |
 | Language strings | every `get_string`/`{{#str}}`/exception key | All defined |
-| CI (moodle-plugin-ci) | Moodle 4.5, 5.0, 5.1, 5.2, 5.3 with PHP 8.3; 5.3 with PHP 8.4 | Runs on the pull request: lint, phpcs, phpdoc, validate, savepoints, mustache, grunt, PHPUnit, Behat |
+| CI (moodle-plugin-ci), [run 45184107617](https://github.com/aboarken/moodle-resourceqr/actions/runs/45184107617) | Moodle 4.5, 5.0, 5.1, 5.2, 5.3 with PHP 8.3; 5.3 with PHP 8.4 | **All six jobs pass**: lint, phpcs and phpdoc (0 warnings), validate, savepoints, mustache, grunt, PHPUnit (155 tests, 732 assertions, none skipped, Imagick included), Behat (17 scenarios; on 5.3 the Classic-theme one is skipped because 5.3 has no Classic) |
 
 **Not run locally:** PHPUnit on Moodle 5.x (5.3 needs PostgreSQL 17; only 16 was available) and
-Behat (no Selenium/ChromeDriver). Both run in CI on every supported version. The new Behat step and
-scenarios were therefore first executed in CI.
+Behat (no Selenium/ChromeDriver). Both ran in CI on every supported version and passed, including
+the new Behat step and scenarios.
 
 ## 9. Remaining risks and limitations
 

@@ -365,7 +365,7 @@ Latest audit (0.2.2, see [docs/AUDIT.md](docs/AUDIT.md)):
 | Upgrade 0.2.1 → 0.2.2 on a real 4.5 site (CLI `upgrade.php`) | Site without a key gets a new 256-bit key; site with a key keeps it |
 | `go.php` over HTTP (PHP built-in server) | Valid link: 303 to the activity. Expired: "QR code expired". Forged or junk parameters: "QR code not valid", nothing reflected. No key in the database: refused, and no key created |
 | phpcs `moodle-extra` (moodlehq/moodle-cs) on every PHP file | No errors or warnings |
-| CI on the pull request (moodle-plugin-ci: lint, phpcs, phpdoc, validate, savepoints, mustache, grunt, PHPUnit, Behat) | Moodle 4.5, 5.0, 5.1, 5.2, 5.3 with PHP 8.3, and 5.3 with PHP 8.4 |
+| CI (moodle-plugin-ci: lint, phpcs, phpdoc, validate, savepoints, mustache, grunt, PHPUnit, Behat), run [45184107617](https://github.com/aboarken/moodle-resourceqr/actions/runs/45184107617) | All six jobs pass: Moodle 4.5, 5.0, 5.1, 5.2, 5.3 with PHP 8.3, and 5.3 with PHP 8.4. On 4.5: PHPUnit 155 tests, 732 assertions, none skipped (Imagick included); Behat 17 scenarios pass (5.3: 16 pass, the Classic-theme one is skipped because 5.3 has no Classic) |
 
 Earlier development checks:
 
