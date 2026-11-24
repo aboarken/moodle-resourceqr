@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## 0.2.4 (2026-11-27)
 
 - **Licence:** GNU GPL version 3 or later, the same as Moodle and as every source file already
   stated. The `LICENSE` file had the GPL version 2 text and now has the version 3 text; the README

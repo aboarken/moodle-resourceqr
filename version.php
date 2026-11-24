@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_resourceqr';
-$plugin->version   = 2026112600;
-$plugin->release   = '0.2.3';
+$plugin->version   = 2026112700;
+$plugin->release   = '0.2.4';
 $plugin->maturity  = MATURITY_STABLE;
 // Moodle 4.5 LTS (4.5.0 = 2024100700) is the lowest supported version.
 $plugin->requires  = 2024100700;
