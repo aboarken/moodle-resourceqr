@@ -22,6 +22,7 @@ enrolment and access-restriction checks.
 6. [Testing](#testing)
 7. [Security](#security)
 8. [Known limitations](#known-limitations)
+9. [Licence](#licence)
 
 ---
 
@@ -473,3 +474,13 @@ GitHub token in the checked-out files. The last full audit, its findings and wha
   someone's access, still stops them using it, as with any Moodle link.
 - Codes for **hidden or restricted** activities can be made by staff who can see them, with a
   warning. People who scan them still need access.
+
+## Licence
+
+Resource QR Code is free software, licensed under the **GNU General Public License, version 2 or
+(at your option) any later version**. The full GPL v2 text is in [LICENSE](LICENSE).
+
+Moodle itself is licensed under GPL version 3 or later. "Version 2 or later" is compatible with
+it, so the plugin can be used and distributed with Moodle. Each PHP file starts with Moodle's
+standard header and `@license` tag, which name version 3 or later: Moodle's coding standard
+(moodle-cs) requires that exact text, and version 3 is one of the versions this licence allows.
