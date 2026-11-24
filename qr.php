@@ -46,5 +46,9 @@ $PAGE->set_url(new moodle_url('/local/resourceqr/qr.php', [
     'expires' => $expires,
 ]));
 
+// Nothing below needs the session. Release its lock before generating the image, so the
+// user's other requests (other tabs, the dialogue's own calls) are not held up meanwhile.
+\core\session\manager::write_close();
+
 $image = \local_resourceqr\local\image::create($cm, $format, (bool) $download, $expires);
 $image->send((bool) $download);

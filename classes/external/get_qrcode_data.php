@@ -43,7 +43,7 @@ class get_qrcode_data extends external_api {
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'Course module id'),
             'expirydate' => new external_value(
-                PARAM_RAW,
+                PARAM_ALPHANUMEXT,
                 'Expiry date as YYYY-MM-DD (the code works until the end of that day), or empty for a lifetime code',
                 VALUE_DEFAULT,
                 ''
@@ -104,11 +104,11 @@ class get_qrcode_data extends external_api {
             'printurl' => new external_value(PARAM_URL, 'URL of the print page'),
             'lifetime' => new external_value(PARAM_BOOL, 'Whether the QR code never expires'),
             'expires' => new external_value(PARAM_INT, 'Expiry time, or 0 for lifetime'),
-            'expirydate' => new external_value(PARAM_RAW, 'Expiry date as YYYY-MM-DD, or empty for lifetime'),
+            'expirydate' => new external_value(PARAM_ALPHANUMEXT, 'Expiry date as YYYY-MM-DD, or empty for lifetime'),
             'expirytext' => new external_value(PARAM_TEXT, 'Expiry shown to the user, or empty for lifetime'),
-            'defaultexpirydate' => new external_value(PARAM_RAW, 'Date suggested when choosing an expiry date (YYYY-MM-DD)'),
-            'minexpirydate' => new external_value(PARAM_RAW, 'Earliest expiry date (YYYY-MM-DD)'),
-            'maxexpirydate' => new external_value(PARAM_RAW, 'Latest expiry date (YYYY-MM-DD)'),
+            'defaultexpirydate' => new external_value(PARAM_ALPHANUMEXT, 'Suggested expiry date (YYYY-MM-DD)'),
+            'minexpirydate' => new external_value(PARAM_ALPHANUMEXT, 'Earliest expiry date (YYYY-MM-DD)'),
+            'maxexpirydate' => new external_value(PARAM_ALPHANUMEXT, 'Latest expiry date (YYYY-MM-DD)'),
             'viewurl' => new external_value(PARAM_URL, 'URL of the stand-alone QR code page'),
         ]);
     }

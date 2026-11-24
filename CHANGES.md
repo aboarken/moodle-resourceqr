@@ -1,5 +1,20 @@
 # Changes
 
+## 0.2.3 (2026-11-26)
+
+Hardening and tests from a second, Moodle-specific review (see docs/AUDIT.md, "Second pass"). No
+change to how the plugin is used, and no database change.
+
+- The image endpoint releases the session lock before it generates the image, so a user's other
+  requests are not held up while a QR code is drawn.
+- The web service and the stand-alone page accept only letters, digits, "-" and "_" in the expiry
+  date (it was checked before, but only after being accepted as raw text).
+- An expiring link to an activity that is waiting to be deleted now shows "QR code not valid"
+  instead of sending people to an error page.
+- Tests: opening each plugin page directly as a student, a non-editing teacher or a user who is not
+  enrolled is refused; a teacher cannot cancel expiring QR codes; the plugin's pages pass Moodle's
+  accessibility checks (axe, WCAG 2.2 AA).
+
 ## 0.2.2 (2026-11-25)
 
 Fixes from a full code and security audit (see docs/AUDIT.md). No change to how the plugin is used.

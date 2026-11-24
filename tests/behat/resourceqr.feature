@@ -123,6 +123,42 @@ Feature: Generate QR codes for activities and resources
     Then I should see "All QR codes with an expiry date have been cancelled."
     And I should see "Last cancelled:"
 
+  Scenario Outline: Opening a plugin page directly without the capability is refused
+    Given I log in as "<user>"
+    Then opening the local_resourceqr "<page>" page of "<identifier>" should fail with "Sorry, but you do not currently have permissions to do that (Generate QR codes for activities and resources)."
+
+    Examples:
+      | user       | identifier | page    |
+      | student1   | page1      | QR code |
+      | student1   | page1      | Print   |
+      | student1   | page1      | Image   |
+      | student1   | C1         | Course  |
+      | noneditor1 | page1      | QR code |
+      | noneditor1 | page1      | Image   |
+      | noneditor1 | C1         | Course  |
+
+  Scenario: A user who is not enrolled in the course cannot open a plugin page
+    When I am on the "page1" "local_resourceqr > QR code" page logged in as outsider
+    Then I should not see "Scan this QR code"
+    And "Download SVG" "link" should not exist
+
+  Scenario: A teacher cannot cancel all expiring QR codes
+    Given I log in as "teacher1"
+    Then opening the local_resourceqr "Cancel QR codes" page should fail with "Access denied"
+
+  @javascript @accessibility
+  Scenario: The plugin's pages meet accessibility standards
+    Given I am on the "page1" "local_resourceqr > QR code" page logged in as teacher1
+    And the page should meet accessibility standards
+    And I am on the "C1" "local_resourceqr > Course" page
+    And the "[data-region='local-resourceqr-courselist']" "css_element" should meet accessibility standards
+    When I click on "Generate QR code: Page 1" "link" in the "[data-region='local-resourceqr-courselist']" "css_element"
+    Then the "QR code: Page 1" "dialogue" should meet accessibility standards
+    And I am on the "page1" "local_resourceqr > Print" page
+    And the "[data-region='local-resourceqr-print']" "css_element" should meet accessibility standards
+    And I open the QR code link of the activity "page1" with expiry "expired"
+    And the page should meet accessibility standards
+
   Scenario: Students do not see the course QR codes page
     Given I am on the "Course 1" "course" page logged in as student1
     Then "QR codes" "link" should not exist

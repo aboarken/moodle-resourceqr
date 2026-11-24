@@ -257,6 +257,10 @@ class expiry {
         } catch (moodle_exception $e) {
             return [self::INVALID, null];
         }
+        if ($cm->deletioninprogress) {
+            // Waiting in the recycle bin's deletion queue: the activity is already gone for users.
+            return [self::INVALID, null];
+        }
         $target = access::get_target_url($cm);
         return $target ? [self::VALID, $target] : [self::INVALID, null];
     }

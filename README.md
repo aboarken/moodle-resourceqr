@@ -357,6 +357,20 @@ npx grunt amd --root=local/resourceqr
 
 ### What was actually run
 
+Second pass (0.2.3, see [docs/AUDIT.md](docs/AUDIT.md), "Second pass"), on a real Moodle 4.5 site:
+
+| Check | Result |
+|---|---|
+| PHPUnit, Moodle 4.5.16+, PHP 8.3.6, PostgreSQL 16, GD and Imagick | 155 tests, 734 assertions, all pass |
+| Every plugin page opened directly as a student, non-editing teacher, non-enrolled user and logged out | Refused every time ("no permission", enrolment page or login page); the cancel page refuses everyone but administrators |
+| Cancel page without a session key, with a wrong one, with the right one | Error; nothing changed; key replaced |
+| axe (Moodle's bundled copy, WCAG 2.0 to 2.2 A and AA) on the QR code page, dialogue, course page, print page and "expired" page, at 1280 px and 390 px | No violations |
+| Right-to-left layout (test language pack with `thisdirection = rtl`) | Panel and course page mirror correctly; the link stays left-to-right |
+| Course page with 300 activities | 4 database reads, 0.08 s |
+| Image endpoint with `zlib.output_compression` on | Correct `Content-Length`, image intact |
+| Behat, the 19 scenarios that need no JavaScript (Moodle 4.5, BrowserKit) | All pass, 219 steps |
+| phpcs `moodle-extra` | No errors or warnings |
+
 Latest audit (0.2.2, see [docs/AUDIT.md](docs/AUDIT.md)):
 
 | Check | Result |
@@ -379,7 +393,8 @@ Earlier development checks:
 
 - **PHPUnit on Moodle 5.x:** 5.3 needs PostgreSQL 17, and only 16 was available here. The 5.3.1
   source was checked for every API the plugin uses.
-- **Behat:** no Selenium/ChromeDriver here.
+- **Behat scenarios that need JavaScript** (dialogue, Classic theme, phone screen, accessibility):
+  no Selenium/ChromeDriver here.
 
 ### Still to check on your own site
 
@@ -406,6 +421,10 @@ GitHub token in the checked-out files. The last full audit, its findings and wha
   grants anything by itself.
 - **What a QR code holds:** only the activity's own address (lifetime), or a signed `go.php` link
   (expiry date). No user, session or token data is ever encoded.
+- **Turning the plugin off** (*Enable QR codes*) stops anyone making QR codes. Codes already given
+  out keep working: lifetime codes are plain activity links, and expiring codes keep redirecting
+  until their date, so printed material doesn't break. To stop expiring codes, use *Cancel all
+  expiring QR codes*.
 - **`go.php` is public on purpose,** because QR codes are scanned by people who aren't logged in
   yet. It does nothing unless the link carries a valid signature: an HMAC-SHA256 of the activity id
   and expiry time with the site's signing key, truncated to 80 bits and compared in constant time.
