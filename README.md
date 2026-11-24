@@ -368,6 +368,7 @@ Second pass (0.2.3, see [docs/AUDIT.md](docs/AUDIT.md), "Second pass"), on a rea
 | Right-to-left layout (test language pack with `thisdirection = rtl`) | Panel and course page mirror correctly; the link stays left-to-right |
 | Course page with 300 activities | 4 database reads, 0.08 s |
 | Image endpoint with `zlib.output_compression` on | Correct `Content-Length`, image intact |
+| Behat, the 19 scenarios that need no JavaScript (Moodle 4.5, BrowserKit) | All pass, 219 steps |
 | phpcs `moodle-extra` | No errors or warnings |
 
 Latest audit (0.2.2, see [docs/AUDIT.md](docs/AUDIT.md)):
@@ -392,7 +393,8 @@ Earlier development checks:
 
 - **PHPUnit on Moodle 5.x:** 5.3 needs PostgreSQL 17, and only 16 was available here. The 5.3.1
   source was checked for every API the plugin uses.
-- **Behat:** no Selenium/ChromeDriver here.
+- **Behat scenarios that need JavaScript** (dialogue, Classic theme, phone screen, accessibility):
+  no Selenium/ChromeDriver here.
 
 ### Still to check on your own site
 

@@ -87,6 +87,64 @@ class behat_local_resourceqr extends behat_base {
     }
 
     /**
+     * Open a plugin page that must be refused, check the error shown, then go back to the site home.
+     *
+     * Moodle's Behat fails any step that ends on an error page, so a refusal cannot be checked
+     * with the normal navigation steps. This step expects the error page, checks its message and
+     * that no QR code was shown, and leaves the browser on a normal page.
+     *
+     * @Then /^opening the local_resourceqr "(?P<type>[^"]*)" page of "(?P<id>[^"]*)" should fail with "(?P<message>[^"]*)"$/
+     * @param string $type Page type, see resolve_page_instance_url().
+     * @param string $id Activity idnumber or course shortname.
+     * @param string $message Text the error must contain.
+     */
+    public function opening_the_instance_page_should_fail(string $type, string $id, string $message): void {
+        $this->visit_expecting_error($this->resolve_page_instance_url($type, $id), $message);
+    }
+
+    /**
+     * Open a plugin page that must be refused, check the error shown, then go back to the site home.
+     *
+     * @Then /^opening the local_resourceqr "(?P<page>[^"]*)" page should fail with "(?P<message>[^"]*)"$/
+     * @param string $page Page name, see resolve_page_url().
+     * @param string $message Text the error must contain.
+     */
+    public function opening_the_page_should_fail(string $page, string $message): void {
+        $this->visit_expecting_error($this->resolve_page_url($page), $message);
+    }
+
+    /**
+     * Visit a URL that must show a Moodle error with the given message and no QR code.
+     *
+     * @param moodle_url $url
+     * @param string $message Text the error must contain.
+     */
+    private function visit_expecting_error(moodle_url $url, string $message): void {
+        $session = $this->getSession();
+        $session->visit($this->locate_path($url->out_as_local_url(false)));
+        $page = $session->getPage();
+        $error = $page->find('xpath', "//div[@data-rel='fatalerror']");
+        $errortext = $error ? $error->getText() : '';
+        $leaked = $page->find('css', "[data-region='local-resourceqr-panel'], [data-region='local-resourceqr-print'], " .
+            "[data-region='local-resourceqr-courselist'], svg");
+        // Leave the error page before the step ends: Behat fails a step that ends on one.
+        $session->visit($this->locate_path('/'));
+
+        if (!$error) {
+            throw new \Behat\Mink\Exception\ExpectationException("'{$url->out(false)}' did not show an error.", $session);
+        }
+        if (strpos($errortext, $message) === false) {
+            throw new \Behat\Mink\Exception\ExpectationException(
+                "The error did not contain '{$message}'. It was: '{$errortext}'",
+                $session
+            );
+        }
+        if ($leaked) {
+            throw new \Behat\Mink\Exception\ExpectationException('The refused page still showed plugin content.', $session);
+        }
+    }
+
+    /**
      * Open the link of a QR code with an expiry date, as someone scanning it would.
      *
      * @When /^I open the QR code link of the activity "(?P<idnumber>[^"]*)" with expiry "(?P<state>valid|expired|forged)"$/

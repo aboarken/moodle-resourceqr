@@ -124,9 +124,8 @@ Feature: Generate QR codes for activities and resources
     And I should see "Last cancelled:"
 
   Scenario Outline: Opening a plugin page directly without the capability is refused
-    When I am on the "<identifier>" "local_resourceqr > <page>" page logged in as <user>
-    Then I should see "Sorry, but you do not currently have permissions to do that (Generate QR codes for activities and resources)."
-    And I should not see "Scan this QR code"
+    Given I log in as "<user>"
+    Then opening the local_resourceqr "<page>" page of "<identifier>" should fail with "Sorry, but you do not currently have permissions to do that (Generate QR codes for activities and resources)."
 
     Examples:
       | user       | identifier | page    |
@@ -135,6 +134,7 @@ Feature: Generate QR codes for activities and resources
       | student1   | page1      | Image   |
       | student1   | C1         | Course  |
       | noneditor1 | page1      | QR code |
+      | noneditor1 | page1      | Image   |
       | noneditor1 | C1         | Course  |
 
   Scenario: A user who is not enrolled in the course cannot open a plugin page
@@ -143,9 +143,8 @@ Feature: Generate QR codes for activities and resources
     And "Download SVG" "link" should not exist
 
   Scenario: A teacher cannot cancel all expiring QR codes
-    When I am on the "local_resourceqr > Cancel QR codes" page logged in as teacher1
-    Then I should see "Access denied"
-    And "Cancel all expiring QR codes" "button" should not exist
+    Given I log in as "teacher1"
+    Then opening the local_resourceqr "Cancel QR codes" page should fail with "Access denied"
 
   @javascript @accessibility
   Scenario: The plugin's pages meet accessibility standards

@@ -328,7 +328,7 @@ by hand.
 | H-1 | Low (performance) | `qr.php` calls `\core\session\manager::write_close()` before generating the image, as Moodle's own file-serving scripts do. The session lock was held while the image was drawn (up to 0.3 s), which holds up the same user's other requests. |
 | H-2 | Low (hardening) | The expiry date is declared `PARAM_ALPHANUMEXT` in the web service (parameter and return values) and in `view.php`, instead of `PARAM_RAW`. It was already validated by a strict pattern before use, so this was not exploitable; the type now refuses anything else at the door, which is what Moodle's guidelines ask for. |
 | H-3 | Low (behaviour) | `expiry::resolve()` treats an activity with `deletioninprogress` (queued for deletion with the recycle bin on) as gone, so the link shows "QR code not valid" instead of redirecting to an error page. |
-| T-1 | Tests | Behat: every plugin page opened directly without the capability (student, non-editing teacher), by a non-enrolled user, and the cancel page by a teacher. New page resolvers in `behat_local_resourceqr` (`"page1" "local_resourceqr > QR code" page`). |
+| T-1 | Tests | Behat: every plugin page opened directly without the capability (student, non-editing teacher), by a non-enrolled user, and the cancel page by a teacher. New page resolvers in `behat_local_resourceqr` (`"page1" "local_resourceqr > QR code" page`) and a step that expects the refusal (`opening the local_resourceqr "QR code" page of "page1" should fail with "..."`), because Moodle's Behat fails any ordinary step that ends on an error page. |
 | T-2 | Tests | Behat `@accessibility` scenario: view page, course list, dialogue, print page and "expired" page must meet accessibility standards. |
 | T-3 | Tests | PHPUnit: deletion in progress; markup in the expiry date refused by parameter validation. |
 | D-1 | Docs | README: what turning the plugin off does to codes already given out; what was run in this pass. |
@@ -339,8 +339,14 @@ by hand.
   all pass.
 - The manual checks in the table above, on a real 4.5 site with Chromium.
 - phpcs `moodle-extra`: clean.
-- CI (moodle-plugin-ci on Moodle 4.5 to 5.3, PHPUnit and Behat) runs on the pull request; the new
-  Behat scenarios are first executed there, because no Selenium is available locally.
+- Behat on Moodle 4.5 locally, the 19 scenarios that need no JavaScript (BrowserKit driver, no
+  Selenium needed): all pass, 219 steps. The refusal step was also run against a page that is
+  *not* refused and against a wrong message, and failed both times as it must.
+- CI (moodle-plugin-ci on Moodle 4.5 to 5.3, PHPUnit and Behat) runs on the pull request. The
+  JavaScript scenarios, including the accessibility one, run only there. The first CI run of this
+  pass failed on all versions: the first version of the refusal scenarios used ordinary navigation
+  steps, which Behat fails on an error page even when the error is the expected result. The pages
+  themselves refused access correctly; the scenarios were rewritten with the step above.
 
 ### Not changed, and why
 
