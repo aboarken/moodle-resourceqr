@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- **Licence:** GNU GPL version 2 or later, stated in a new *Licence* section of the README.
-  `LICENSE` keeps the GPL v2 text. Compatible with Moodle (GPL v3 or later). No code change.
+- **Licence:** GNU GPL version 3 or later, the same as Moodle and as every source file already
+  stated. The `LICENSE` file had the GPL version 2 text and now has the version 3 text; the README
+  has a new *Licence* section. No code change.
 
 ## 0.2.3 (2026-11-26)
 

@@ -358,10 +358,7 @@ by hand.
 
 ### Licence (resolved after 0.2.3)
 
-The repository's `LICENSE` file is the text of the **GNU GPL version 2**, while the source headers
-named only **GPL v3 or later** (Moodle's licence). The owner chose **GPL v2 or later**: compatible
-with Moodle's GPL v3 or later, unlike "GPL v2 only". `LICENSE` keeps the v2 text and the README has a
-*Licence* section that states it. The standard Moodle header and `@license` tag in each PHP file
-still name version 3 or later, because Moodle's coding standard requires that exact text
-(moodle-cs `BoilerplateComment` and `FileExpectedTags`; CI fails on either); version 3 is one of
-the versions "v2 or later" allows.
+The repository's `LICENSE` file was the text of the **GNU GPL version 2**, while every source file
+says **GPL v3 or later** (Moodle's licence). The owner chose **GPL v3 or later**: `LICENSE` now has
+the GPL version 3 text (the same file as Moodle's `COPYING.txt`), and the README has a *Licence*
+section. The file headers and `@license` tags were already correct and are unchanged.

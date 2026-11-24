@@ -477,10 +477,6 @@ GitHub token in the checked-out files. The last full audit, its findings and wha
 
 ## Licence
 
-Resource QR Code is free software, licensed under the **GNU General Public License, version 2 or
-(at your option) any later version**. The full GPL v2 text is in [LICENSE](LICENSE).
-
-Moodle itself is licensed under GPL version 3 or later. "Version 2 or later" is compatible with
-it, so the plugin can be used and distributed with Moodle. Each PHP file starts with Moodle's
-standard header and `@license` tag, which name version 3 or later: Moodle's coding standard
-(moodle-cs) requires that exact text, and version 3 is one of the versions this licence allows.
+Resource QR Code is free software, licensed under the **GNU General Public License, version 3 or
+(at your option) any later version**, the same licence as Moodle. The full text is in
+[LICENSE](LICENSE).
