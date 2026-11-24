@@ -22,6 +22,7 @@ enrolment and access-restriction checks.
 6. [Testing](#testing)
 7. [Security](#security)
 8. [Known limitations](#known-limitations)
+9. [Licence](#licence)
 
 ---
 
@@ -473,3 +474,9 @@ GitHub token in the checked-out files. The last full audit, its findings and wha
   someone's access, still stops them using it, as with any Moodle link.
 - Codes for **hidden or restricted** activities can be made by staff who can see them, with a
   warning. People who scan them still need access.
+
+## Licence
+
+Resource QR Code is free software, licensed under the **GNU General Public License, version 3 or
+(at your option) any later version**, the same licence as Moodle. The full text is in
+[LICENSE](LICENSE).

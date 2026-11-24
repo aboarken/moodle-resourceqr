@@ -356,10 +356,9 @@ by hand.
 - **`go.php` when the plugin is disabled:** it keeps redirecting, on purpose, so printed codes don't
   break. Now documented.
 
-### Open point for the owner: licence file
+### Licence (resolved after 0.2.3)
 
-The repository's `LICENSE` file is the text of the **GNU GPL version 2** (added with the initial
-commit), while every source file's header says **GNU GPL v3 or later**, which is also Moodle's own
-licence and what the Moodle plugins directory expects. The two should agree. Replacing `LICENSE`
-with the GPL version 3 text (the same file as Moodle's `COPYING.txt`) would do it. Choosing a
-licence is the copyright holder's decision, so the file was left as it is.
+The repository's `LICENSE` file was the text of the **GNU GPL version 2**, while every source file
+says **GPL v3 or later** (Moodle's licence). The owner chose **GPL v3 or later**: `LICENSE` now has
+the GPL version 3 text (the same file as Moodle's `COPYING.txt`), and the README has a *Licence*
+section. The file headers and `@license` tags were already correct and are unchanged.
