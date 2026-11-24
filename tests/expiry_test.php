@@ -132,8 +132,13 @@ final class expiry_test extends \advanced_testcase {
         $this->assertSame([expiry::EXPIRED, null], expiry::resolve($cmid, $past, expiry::sign($cmid, $past)));
         $this->assertSame([expiry::INVALID, null], expiry::resolve($cmid, $expires + 99, expiry::sign($cmid, $expires)));
 
-        // Remove the activity (course_delete_module() is deprecated from Moodle 5.2).
+        // An activity waiting to be deleted (recycle bin queue) is already gone for users.
         global $DB;
+        $DB->set_field('course_modules', 'deletioninprogress', 1, ['id' => $cmid]);
+        rebuild_course_cache($this->course->id, true);
+        $this->assertSame([expiry::INVALID, null], expiry::resolve($cmid, $expires, expiry::sign($cmid, $expires)));
+
+        // Remove the activity (course_delete_module() is deprecated from Moodle 5.2).
         $DB->delete_records('course_modules', ['id' => $cmid]);
         rebuild_course_cache($this->course->id, true);
         $this->assertSame([expiry::INVALID, null], expiry::resolve($cmid, $expires, expiry::sign($cmid, $expires)));
@@ -268,6 +273,14 @@ final class expiry_test extends \advanced_testcase {
         $this->assertStringContainsString('expires=' . $dated['expires'], $dated['previewurl']);
         $this->assertStringContainsString('expires=' . $dated['expires'], $dated['printurl']);
         $this->assertSame(get_string('validuntil', 'local_resourceqr', expiry::format($dated['expires'])), $dated['expirytext']);
+
+        // Anything that is not letters, digits, "-" or "_" is refused by parameter validation.
+        try {
+            get_qrcode_data::execute($this->page->cmid, '<b>2030-01-01</b>');
+            $this->fail('Markup in the expiry date must be refused.');
+        } catch (\invalid_parameter_exception $e) {
+            $this->assertStringContainsString('expirydate', $e->debuginfo);
+        }
 
         $this->expectException(\moodle_exception::class);
         get_qrcode_data::execute($this->page->cmid, '2020-01-01');

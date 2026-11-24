@@ -33,7 +33,7 @@ use local_resourceqr\local\access;
 $cmid = required_param('cmid', PARAM_INT);
 // Validity chosen with the form on this page when JavaScript is not available.
 $validity = optional_param('validity', 'lifetime', PARAM_ALPHA);
-$expirydate = optional_param('expirydate', '', PARAM_RAW_TRIMMED);
+$expirydate = optional_param('expirydate', '', PARAM_ALPHANUMEXT);
 
 [$course, $cm] = get_course_and_cm_from_cmid($cmid);
 require_login($course, false, $cm);

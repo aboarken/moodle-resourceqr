@@ -33,6 +33,60 @@ use local_resourceqr\local\expiry;
  */
 class behat_local_resourceqr extends behat_base {
     /**
+     * Convert page names to URLs for steps like 'When I am on the "[page name]" page'.
+     *
+     * Recognised page names are:
+     * | Page             | Description                                   |
+     * | Cancel QR codes  | Confirmation page for cancelling expiring QR codes |
+     *
+     * @param string $page Name of the page, with the component name removed, e.g. 'Cancel QR codes'.
+     * @return moodle_url
+     */
+    protected function resolve_page_url(string $page): moodle_url {
+        switch (strtolower($page)) {
+            case 'cancel qr codes':
+                return new moodle_url('/local/resourceqr/resetlinks.php');
+            default:
+                throw new Exception("Unrecognised local_resourceqr page '{$page}'.");
+        }
+    }
+
+    /**
+     * Convert page names to URLs for steps like 'When I am on the "[identifier]" "[page type]" page'.
+     *
+     * Recognised page names are:
+     * | Page type  | Identifier        | Description                                  |
+     * | QR code    | Activity idnumber | Stand-alone QR code page (view.php)          |
+     * | Print      | Activity idnumber | Print page (print.php)                       |
+     * | Image      | Activity idnumber | SVG image endpoint (qr.php)                  |
+     * | Course     | Course shortname  | Course "QR codes" page (course.php)          |
+     *
+     * @param string $type Page type, with the component name removed, e.g. 'QR code'.
+     * @param string $identifier Activity idnumber or course shortname.
+     * @return moodle_url
+     */
+    protected function resolve_page_instance_url(string $type, string $identifier): moodle_url {
+        $type = strtolower($type);
+        if ($type === 'course') {
+            return new moodle_url('/local/resourceqr/course.php', ['id' => $this->get_course_id($identifier)]);
+        }
+        $cm = $this->get_course_module_for_identifier($identifier);
+        if (!$cm) {
+            throw new Exception("No activity with idnumber '{$identifier}'.");
+        }
+        switch ($type) {
+            case 'qr code':
+                return new moodle_url('/local/resourceqr/view.php', ['cmid' => $cm->id]);
+            case 'print':
+                return new moodle_url('/local/resourceqr/print.php', ['cmid' => $cm->id]);
+            case 'image':
+                return new moodle_url('/local/resourceqr/qr.php', ['cmid' => $cm->id, 'format' => 'svg']);
+            default:
+                throw new Exception("Unrecognised local_resourceqr page type '{$type}'.");
+        }
+    }
+
+    /**
      * Open the link of a QR code with an expiry date, as someone scanning it would.
      *
      * @When /^I open the QR code link of the activity "(?P<idnumber>[^"]*)" with expiry "(?P<state>valid|expired|forged)"$/

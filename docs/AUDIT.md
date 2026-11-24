@@ -300,3 +300,60 @@ the new Behat step and scenarios.
 3. Consider dropping `dist/` from the repository now that every release publishes the ZIP.
 4. Keep the CI matrix in step with Moodle's supported branches (add 5.4 when it is released).
 5. Re-run this audit when adding features that store data or add entry points.
+
+## 11. Second pass (0.2.3)
+
+A second review two days after the first, with a Moodle reviewer's checklist: entry points,
+capabilities and contexts, web service types, sessions, scale, accessibility, right-to-left layout
+and the upgrade path. It was done on 0.2.2 (commit `3ebfa5b`). It found **no new vulnerability and
+no functional bug**. The changes are small hardening steps and tests that lock in what was checked
+by hand.
+
+### What was checked, and how
+
+| Area | How | Result |
+|---|---|---|
+| Authorization on every entry point | Each page and both image formats requested directly as a student, a non-editing teacher, a non-enrolled user, an editing teacher and logged out, on a real 4.5 site | Only the editing teacher gets pages and images; the others get "no permission", the enrolment page or the login page. `resetlinks.php` refuses everyone but administrators |
+| CSRF on the only state-changing page | `resetlinks.php` as administrator: GET with `confirm=1` and no `sesskey`, POST with a wrong `sesskey`, POST with the right one | Error; confirmation page shown again and key unchanged; key replaced |
+| Scale | Course page for a course with 300 activities, database reads counted | 4 reads, 0.08 s: module contexts are preloaded by `get_fast_modinfo()`, so there is no query per activity |
+| Response integrity | Image endpoint with `zlib.output_compression=On` and `Accept-Encoding: gzip` | Not compressed, `Content-Length` matches the bytes sent |
+| Accessibility | axe (the copy bundled with Moodle, same tags as `behat_accessibility`: WCAG 2.0, 2.1, 2.2 A and AA) on view page, dialogue, course list, print page and the "expired" page, at 1280 px and 390 px | 0 violations |
+| Right-to-left | Pages rendered with a test language pack (`thisdirection = rtl`) | Layout mirrors; the encoded link stays `dir="ltr"` |
+| Moodle APIs | Callbacks, `db/*.php` files, privacy provider, event, upgrade savepoints, external function definition re-read against 4.5 and 5.3 | No deprecated or misused API. No tasks, observers, caches, messages, hooks or tables exist, and none are needed |
+
+### Changes
+
+| # | Severity | Change |
+|---|---|---|
+| H-1 | Low (performance) | `qr.php` calls `\core\session\manager::write_close()` before generating the image, as Moodle's own file-serving scripts do. The session lock was held while the image was drawn (up to 0.3 s), which holds up the same user's other requests. |
+| H-2 | Low (hardening) | The expiry date is declared `PARAM_ALPHANUMEXT` in the web service (parameter and return values) and in `view.php`, instead of `PARAM_RAW`. It was already validated by a strict pattern before use, so this was not exploitable; the type now refuses anything else at the door, which is what Moodle's guidelines ask for. |
+| H-3 | Low (behaviour) | `expiry::resolve()` treats an activity with `deletioninprogress` (queued for deletion with the recycle bin on) as gone, so the link shows "QR code not valid" instead of redirecting to an error page. |
+| T-1 | Tests | Behat: every plugin page opened directly without the capability (student, non-editing teacher), by a non-enrolled user, and the cancel page by a teacher. New page resolvers in `behat_local_resourceqr` (`"page1" "local_resourceqr > QR code" page`). |
+| T-2 | Tests | Behat `@accessibility` scenario: view page, course list, dialogue, print page and "expired" page must meet accessibility standards. |
+| T-3 | Tests | PHPUnit: deletion in progress; markup in the expiry date refused by parameter validation. |
+| D-1 | Docs | README: what turning the plugin off does to codes already given out; what was run in this pass. |
+
+### Tests run in this pass
+
+- PHPUnit on Moodle 4.5.16+, PHP 8.3.6, PostgreSQL 16, GD and Imagick: 155 tests, 734 assertions,
+  all pass.
+- The manual checks in the table above, on a real 4.5 site with Chromium.
+- phpcs `moodle-extra`: clean.
+- CI (moodle-plugin-ci on Moodle 4.5 to 5.3, PHPUnit and Behat) runs on the pull request; the new
+  Behat scenarios are first executed there, because no Selenium is available locally.
+
+### Not changed, and why
+
+- **`readonlysession` for the web service:** it would save little (the dialogue makes one call) and
+  read-only sessions are off by default.
+- **Image caching:** see section 6; still not worth the invalidation logic.
+- **`go.php` when the plugin is disabled:** it keeps redirecting, on purpose, so printed codes don't
+  break. Now documented.
+
+### Open point for the owner: licence file
+
+The repository's `LICENSE` file is the text of the **GNU GPL version 2** (added with the initial
+commit), while every source file's header says **GNU GPL v3 or later**, which is also Moodle's own
+licence and what the Moodle plugins directory expects. The two should agree. Replacing `LICENSE`
+with the GPL version 3 text (the same file as Moodle's `COPYING.txt`) would do it. Choosing a
+licence is the copyright holder's decision, so the file was left as it is.
